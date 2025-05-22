@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace Server.Data.Models
 {
-	public class DeviceSensor
+	public class DeviceSensor :BaseModel
 	{
 		[Key]
 		public long SensorID { get; set; }
