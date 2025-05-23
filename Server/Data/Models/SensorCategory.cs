@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Server.Data.Models
 {
@@ -17,7 +18,7 @@ namespace Server.Data.Models
 		public DateTime CreatedOn { get; set; }
 
 		public DateTime? DeactivatedOn { get; set; }
-
+		[JsonIgnore]
 		public ICollection<DeviceSensor>? DeviceSensors { get; set; }
 
 	}

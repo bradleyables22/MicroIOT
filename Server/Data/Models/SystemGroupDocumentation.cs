@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Server.Data.Models
 {
@@ -7,9 +8,7 @@ namespace Server.Data.Models
 	{
 		[Key]
 		public long DocumentID { get; set; }
-
-		public long SystemGroupID { get; set; }
-
+		public long? SystemGroupID { get; set; }
 		public string Name { get; set; } = string.Empty;
 
 		public string Description { get; set; } = string.Empty;
@@ -17,10 +16,9 @@ namespace Server.Data.Models
 		public DateTime CreatedOn { get; set; }
 
 		public DateTime? DeactivatedOn { get; set; }
-
+		[JsonIgnore]
 		[ForeignKey(nameof(SystemGroupID))]
-		public SystemGroup SystemGroup { get; set; } = null!;
-
-		public ICollection<DocumentationPage> Pages { get; set; } = new List<DocumentationPage>();
+		public SystemGroup? SystemGroup { get; set; } = null!;
+		public ICollection<DocumentationPage>? Pages { get; set; }
 	}
 }
