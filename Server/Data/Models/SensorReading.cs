@@ -23,7 +23,7 @@ namespace Server.Data.Models
 		public int PartitionKey => Year * 100 + Month;
 		public string Value { get; set; } = string.Empty;
 
-		public JsonDocument? Metadata { get; set; }
+		public List<Entry>? Metadata { get; set; }
 
 		public DateTime? DeactivatedOn { get; set; }
 		[JsonIgnore]

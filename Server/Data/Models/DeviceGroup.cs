@@ -17,7 +17,7 @@ namespace Server.Data.Models
 		public long? SystemGroupID { get; set; }
 		public long? GroupTypeID { get; set; }
 
-		public JsonDocument? Metadata { get; set; }
+		public List<Entry>? Metadata { get; set; }
 
 		public DateTime CreatedOn { get; set; }
 		public DateTime? ConfirmedOn { get; set; }

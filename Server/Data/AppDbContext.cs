@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Server.Data.Models;
+using Server.Extensions;
+using System.Text.Json;
 
 namespace Server.Data
 {
@@ -7,53 +9,72 @@ namespace Server.Data
 	{
 		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 		#region Sets
-		public DbSet<SystemGroup> SystemGroups => Set<SystemGroup>();
-		public DbSet<SystemGroupDocumentation> SystemGroupDocumentations => Set<SystemGroupDocumentation>();
-		public DbSet<DocumentationPage> DocumentationPages => Set<DocumentationPage>();
-		public DbSet<DeviceType> DeviceTypes => Set<DeviceType>();
-		public DbSet<SensorType> SensorTypes => Set<SensorType>();
-		public DbSet<SensorCategory> SensorCategories => Set<SensorCategory>();
-		public DbSet<GroupType> GroupTypes => Set<GroupType>();
-		public DbSet<DeviceGroup> DeviceGroups => Set<DeviceGroup>();
-		public DbSet<Device> Devices => Set<Device>();
-		public DbSet<DeviceSensor> DeviceSensors => Set<DeviceSensor>();
-		public DbSet<SensorReading> SensorReadings => Set<SensorReading>();
+		public DbSet<SystemGroup> SystemGroups { get; set; }
+		public DbSet<SystemGroupDocumentation> SystemGroupDocumentations { get; set; }
+		public DbSet<DocumentationPage> DocumentationPages { get; set; }
+		public DbSet<DeviceType> DeviceTypes { get; set; }
+		public DbSet<SensorType> SensorTypes { get; set; }
+		public DbSet<SensorCategory> SensorCategories { get; set; }
+		public DbSet<GroupType> GroupTypes { get; set; }
+		public DbSet<DeviceGroup> DeviceGroups { get; set; }
+		public DbSet<Device> Devices { get; set; }
+		public DbSet<DeviceSensor> DeviceSensors { get; set; }
+		public DbSet<SensorReading> SensorReadings { get; set; }
 		#endregion
 
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			#region MetaData Setup
-			//modelBuilder.Entity<SystemGroup>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
-			//modelBuilder.Entity<DeviceType>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
+			// SystemGroup
+			modelBuilder.Entity<SystemGroup>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			//modelBuilder.Entity<SensorType>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
+			// DeviceType
+			modelBuilder.Entity<DeviceType>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
 
-			//modelBuilder.Entity<SensorCategory>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
+			// SensorType
+			modelBuilder.Entity<SensorType>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
 
-			//modelBuilder.Entity<GroupType>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
+			// SensorCategory
+			modelBuilder.Entity<SensorCategory>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
 
-			//modelBuilder.Entity<DeviceGroup>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
+			// GroupType
+			modelBuilder.Entity<GroupType>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			//modelBuilder.Entity<Device>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
+			// DeviceGroup
+			modelBuilder.Entity<DeviceGroup>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			//modelBuilder.Entity<DeviceSensor>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
+			// Device
+			modelBuilder.Entity<Device>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			//modelBuilder.Entity<SensorReading>()
-			//	.OwnsOne(_ => _.Metadata, b => { b.ToJson(); });
+			// DeviceSensor
+			modelBuilder.Entity<DeviceSensor>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+
+			// SensorReading
+			modelBuilder.Entity<SensorReading>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 			#endregion
 
 			#region Deletion Policies
 			modelBuilder.Entity<Device>()
-				.HasMany(_=>_.Sensors).WithOne(_=>_.Device).HasForeignKey(_=>_.DeviceID).OnDelete(DeleteBehavior.Cascade);
+				.HasMany(_ => _.Sensors).WithOne(_ => _.Device).HasForeignKey(_ => _.DeviceID).OnDelete(DeleteBehavior.Cascade);
 
 			modelBuilder.Entity<SensorCategory>()
 				.HasMany(_ => _.DeviceSensors).WithOne(_ => _.SensorCategory).HasForeignKey(_ => _.SensorCategoryID).OnDelete(DeleteBehavior.SetNull);

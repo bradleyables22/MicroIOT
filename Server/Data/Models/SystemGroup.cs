@@ -12,7 +12,7 @@ namespace Server.Data.Models
 
 		public string Description { get; set; } = string.Empty;
 
-		public JsonDocument? Metadata { get; set; }
+		public List<Entry>? Metadata { get; set; }
 
 		public DateTime CreatedOn { get; set; }
 

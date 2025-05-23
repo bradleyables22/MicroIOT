@@ -43,7 +43,7 @@ namespace Server.Repositories
 					Success = false,
 					Data = default,
 					Exception =
-					new KeyNotFoundException($"Entity of type {typeof(T).Name} could not be found.")
+					new System.Collections.Generic.KeyNotFoundException($"Entity of type {typeof(T).Name} could not be found.")
 				};
 
 			_context.Set<T>().Remove(entity);
