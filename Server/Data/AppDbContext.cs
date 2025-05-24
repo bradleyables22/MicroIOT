@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Server.Data.Models;
 using Server.Extensions;
-using System.Text.Json;
 
 namespace Server.Data
 {
@@ -20,54 +19,49 @@ namespace Server.Data
 		public DbSet<Device> Devices { get; set; }
 		public DbSet<DeviceSensor> DeviceSensors { get; set; }
 		public DbSet<SensorReading> SensorReadings { get; set; }
+		public DbSet<ReadingType> ReadingTypes { get; set; }
 		#endregion
 
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			#region MetaData Setup
-			// SystemGroup
 			modelBuilder.Entity<SystemGroup>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			// DeviceType
 			modelBuilder.Entity<DeviceType>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
 
-			// SensorType
 			modelBuilder.Entity<SensorType>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
 
-			// SensorCategory
 			modelBuilder.Entity<SensorCategory>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
 
-			// GroupType
 			modelBuilder.Entity<GroupType>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			// DeviceGroup
 			modelBuilder.Entity<DeviceGroup>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			// Device
 			modelBuilder.Entity<Device>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			// DeviceSensor
 			modelBuilder.Entity<DeviceSensor>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 
-			// SensorReading
 			modelBuilder.Entity<SensorReading>()
+				.Property(e => e.Metadata)
+				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+			modelBuilder.Entity<ReadingType>()
 				.Property(e => e.Metadata)
 				.HasConversion(JsonValueConverter.ListOfEntryConverter);
 			#endregion
@@ -84,6 +78,8 @@ namespace Server.Data
 
 			modelBuilder.Entity<DeviceSensor>()
 				.HasMany(_ => _.Readings).WithOne(_ => _.Sensor).HasForeignKey(_ => _.SensorID).OnDelete(DeleteBehavior.SetNull);
+			modelBuilder.Entity<ReadingType>()
+				.HasMany(_ => _.Readings).WithOne(_ => _.ReadingType).HasForeignKey(_ => _.ReadingTypeID).OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<DeviceType>()
 				.HasMany(_ => _.Devices).WithOne(_ => _.DeviceType).HasForeignKey(_ => _.DeviceTypeID).OnDelete(DeleteBehavior.SetNull);
@@ -102,12 +98,12 @@ namespace Server.Data
 
 			#endregion
 			#region Indexes
-			//modelBuilder.Entity<SensorReading>()
-			//	.HasIndex(_ => _.Year);
-			//modelBuilder.Entity<SensorReading>()
-			//	.HasIndex(_ => _.Month);
-			//modelBuilder.Entity<SensorReading>()
-			//	.HasIndex(_ => _.Day);
+			modelBuilder.Entity<SensorReading>()
+				.HasIndex(_ => _.Year);
+			modelBuilder.Entity<SensorReading>()
+				.HasIndex(_ => _.Month);
+			modelBuilder.Entity<SensorReading>()
+				.HasIndex(_ => _.Day);
 			#endregion
 		}
 	}
