@@ -14,7 +14,7 @@ namespace Server.Data
 		public DbSet<DeviceType> DeviceTypes { get; set; }
 		public DbSet<SensorType> SensorTypes { get; set; }
 		public DbSet<SensorCategory> SensorCategories { get; set; }
-		public DbSet<GroupType> GroupTypes { get; set; }
+		public DbSet<DeviceGroupType> DeviceGroupTypes { get; set; }
 		public DbSet<DeviceGroup> DeviceGroups { get; set; }
 		public DbSet<Device> Devices { get; set; }
 		public DbSet<DeviceSensor> DeviceSensors { get; set; }
@@ -27,43 +27,55 @@ namespace Server.Data
 		{
 			#region MetaData Setup
 			modelBuilder.Entity<SystemGroup>()
-				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+	.Property(e => e.Metadata)
+	.HasConversion(JsonValueConverter.ListOfEntryConverter)
+	.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
 			modelBuilder.Entity<DeviceType>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
+			// Repeat for all:
 			modelBuilder.Entity<SensorType>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
 			modelBuilder.Entity<SensorCategory>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter); 
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
-			modelBuilder.Entity<GroupType>()
+			modelBuilder.Entity<DeviceGroupType>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
 			modelBuilder.Entity<DeviceGroup>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
 			modelBuilder.Entity<Device>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
 			modelBuilder.Entity<DeviceSensor>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
 			modelBuilder.Entity<SensorReading>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
+
 			modelBuilder.Entity<ReadingType>()
 				.Property(e => e.Metadata)
-				.HasConversion(JsonValueConverter.ListOfEntryConverter);
+				.HasConversion(JsonValueConverter.ListOfEntryConverter)
+				.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 			#endregion
 
 			#region Deletion Policies

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
-using Server.Graphql;
+using Server.Services.Background;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,17 +9,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddGraphQLServer()
-	.AddQueryType<Query>()
-	.ModifyCostOptions(_=>_.SkipAnalyzer = true)
-	.AddFiltering()
-	.AddSorting()
-	.AddProjections();
+builder.Services.AddHostedService<DummyDataService>();
 
 var app = builder.Build();
 
 app.MapOpenApi();
-app.MapGraphQL("/graphql");
 app.UseHttpsRedirection();
 
 app.Run();
