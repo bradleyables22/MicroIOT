@@ -56,6 +56,43 @@ namespace Server.Endpoints
 				.WithName("UpdateDevice")
 				;
 
+			group.MapPut("Reactivate", async (IDeviceRepository _repo, string id) =>
+			{
+				var existingResult = await _repo.GetById(id);
+				if (existingResult.Success)
+				{
+					if (existingResult.Data == null)
+						return Results.NotFound();
+
+					if (existingResult.Data.DeactivatedOn == null)
+						return Results.Problem(statusCode: 409,
+							title: "Conflict",
+							detail: "Already deactivated"
+							);
+					else
+					{
+						existingResult.Data.DeactivatedOn = null;
+						var result = await _repo.Update(existingResult.Data);
+						return result.AsResponse();
+					}
+				}
+				else
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: existingResult.Exception?.Message);
+				}
+			})
+				.Produces<Device>(200, "application/json")
+				.Produces(204)
+				.ProducesProblem(409, "application/json")
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("ReactivateDevice")
+				.WithDescription("Reactivate a device")
+				.WithSummary("Reactivate")
+				.WithName("ReactivateDevice")
+				;
+
 			group.MapPost("Create", async (IDeviceRepository _repo, CreateDeviceDTO create) =>
 			{
 				var result = await _repo.Create(new Device(create));

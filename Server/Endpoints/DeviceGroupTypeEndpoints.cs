@@ -56,6 +56,43 @@ namespace Server.Endpoints
 				.WithName("UpdateDeviceGroupType")
 				;
 
+			group.MapDelete("Reactivate", async (IDeviceGroupTypeRepository _repo, long id) =>
+			{
+				var existingResult = await _repo.GetById(id);
+				if (existingResult.Success)
+				{
+					if (existingResult.Data == null)
+						return Results.NotFound();
+
+					if (existingResult.Data.DeactivatedOn == null)
+						return Results.Problem(statusCode: 409,
+							title: "Conflict",
+							detail: "Currently Active"
+							);
+					else
+					{
+						existingResult.Data.DeactivatedOn = null;
+						var result = await _repo.Update(existingResult.Data);
+						return result.AsResponse();
+					}
+				}
+				else
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: existingResult.Exception?.Message);
+				}
+			})
+				.Produces<DeviceGroupType>(200, "application/json")
+				.Produces(204)
+				.ProducesProblem(409, "application/json")
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("ReactivateDeviceGroupType")
+				.WithDescription("Reactivate a device group")
+				.WithSummary("Reactivate")
+				.WithName("ReactivateDeviceGroupType")
+				;
+
 			group.MapPost("Create", async (IDeviceGroupTypeRepository _repo, CreateDeviceGroupTypeDTO create) =>
 			{
 				var result = await _repo.Create(new DeviceGroupType(create));

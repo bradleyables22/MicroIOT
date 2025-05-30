@@ -50,10 +50,47 @@ namespace Server.Endpoints
 				.Produces<SensorType>(200, "application/json")
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
-				.WithDisplayName("UpdateDeviceType")
+				.WithDisplayName("UpdateSensorType")
 				.WithDescription("Update a sensor type")
 				.WithSummary("Update")
 				.WithName("UpdateSensorType")
+				;
+
+			group.MapPut("Reactivate", async (ISensorTypeRepository _repo, string id) =>
+			{
+				var existingResult = await _repo.GetById(id);
+				if (existingResult.Success)
+				{
+					if (existingResult.Data == null)
+						return Results.NotFound();
+
+					if (existingResult.Data.DeactivatedOn == null)
+						return Results.Problem(statusCode: 409,
+							title: "Conflict",
+							detail: "Already deactivated"
+							);
+					else
+					{
+						existingResult.Data.DeactivatedOn = null;
+						var result = await _repo.Update(existingResult.Data);
+						return result.AsResponse();
+					}
+				}
+				else
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: existingResult.Exception?.Message);
+				}
+			})
+				.Produces<SensorType>(200, "application/json")
+				.Produces(204)
+				.ProducesProblem(409, "application/json")
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("ReactivateSensorType")
+				.WithDescription("Reactivate a sensor type")
+				.WithSummary("Reactivate")
+				.WithName("ReactivateSensorType")
 				;
 
 			group.MapPost("Create", async (ISensorTypeRepository _repo, CreateSensorTypeDTO create) =>

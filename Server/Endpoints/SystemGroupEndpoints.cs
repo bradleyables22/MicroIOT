@@ -56,7 +56,42 @@ namespace Server.Endpoints
 				.WithSummary("Update")
 				.WithName("UpdateSystem")
 				;
+			group.MapPut("Reactivate", async (ISystemGroupRepository _repo, long id) =>
+			{
+				var existingResult = await _repo.GetById(id);
+				if (existingResult.Success)
+				{
+					if (existingResult.Data == null)
+						return Results.NotFound();
 
+					if (existingResult.Data.DeactivatedOn == null)
+						return Results.Problem(statusCode: 409,
+							title: "Conflict",
+							detail: "Currently active"
+							);
+					else
+					{
+						existingResult.Data.DeactivatedOn = DateTime.UtcNow;
+						var result = await _repo.Update(existingResult.Data);
+						return result.AsResponse();
+					}
+				}
+				else
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: existingResult.Exception?.Message);
+				}
+			})
+				.Produces<SystemGroup>(200, "application/json")
+				.Produces(204)
+				.ProducesProblem(409, "application/json")
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("ReactivateSystem")
+				.WithDescription("Reactivate a system group")
+				.WithSummary("Reactivate")
+				.WithName("ReactivateSystem")
+				;
 			group.MapPost("Create", async (ISystemGroupRepository _repo, CreateSystemGroupDTO create) =>
 			{
 				var result = await _repo.Create(new SystemGroup(create));

@@ -51,10 +51,47 @@ namespace Server.Endpoints
 				.Produces<SensorCategory>(200, "application/json")
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
-				.WithDisplayName("UpdateDeviceType")
+				.WithDisplayName("UpdateSensorCategory")
 				.WithDescription("Update a sensor category")
 				.WithSummary("Update")
-				.WithName("UpdateSensorType")
+				.WithName("UpdateSensorCategory")
+				;
+
+			group.MapPut("Reactivate", async (ISensorCategoryRepository _repo, long id) =>
+			{
+				var existingResult = await _repo.GetById(id);
+				if (existingResult.Success)
+				{
+					if (existingResult.Data == null)
+						return Results.NotFound();
+
+					if (existingResult.Data.DeactivatedOn == null)
+						return Results.Problem(statusCode: 409,
+							title: "Conflict",
+							detail: "Currently active"
+							);
+					else
+					{
+						existingResult.Data.DeactivatedOn = null;
+						var result = await _repo.Update(existingResult.Data);
+						return result.AsResponse();
+					}
+				}
+				else
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: existingResult.Exception?.Message);
+				}
+			})
+				.Produces<SensorCategory>(200, "application/json")
+				.Produces(204)
+				.ProducesProblem(409, "application/json")
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("ReactivateSensorCategory")
+				.WithDescription("Reactivate a sensor category")
+				.WithSummary("Reactivate")
+				.WithName("ReactivateSensorCategory")
 				;
 
 			group.MapPost("Create", async (ISensorCategoryRepository _repo, CreateSensorCategoryDTO create) =>

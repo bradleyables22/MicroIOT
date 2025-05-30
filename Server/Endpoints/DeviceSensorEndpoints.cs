@@ -55,7 +55,42 @@ namespace Server.Endpoints
 				.WithSummary("Update")
 				.WithName("UpdateDeviceSensor")
 				;
+			group.MapPut("Reactivate", async (IDeviceSensorRepository _repo, string id) =>
+			{
+				var existingResult = await _repo.GetById(id);
+				if (existingResult.Success)
+				{
+					if (existingResult.Data == null)
+						return Results.NotFound();
 
+					if (existingResult.Data.DeactivatedOn == null)
+						return Results.Problem(statusCode: 409,
+							title: "Conflict",
+							detail: "Currently Active"
+							);
+					else
+					{
+						existingResult.Data.DeactivatedOn = null;
+						var result = await _repo.Update(existingResult.Data);
+						return result.AsResponse();
+					}
+				}
+				else
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: existingResult.Exception?.Message);
+				}
+			})
+				.Produces<DeviceSensor>(200, "application/json")
+				.Produces(204)
+				.ProducesProblem(409, "application/json")
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("ReactivateDeviceSensor")
+				.WithDescription("Reactivate a device sensor")
+				.WithSummary("Reactivate")
+				.WithName("ReactivateDeviceSensor")
+				;
 
 			group.MapPost("Create", async (IDeviceSensorRepository _repo, CreateDeviceSensorDTO create) =>
 			{
