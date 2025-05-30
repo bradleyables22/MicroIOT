@@ -9,8 +9,6 @@ namespace Server.Data
 		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 		#region Sets
 		public DbSet<SystemGroup> SystemGroups { get; set; }
-		public DbSet<SystemGroupDocumentation> SystemGroupDocumentations { get; set; }
-		public DbSet<DocumentationPage> DocumentationPages { get; set; }
 		public DbSet<DeviceType> DeviceTypes { get; set; }
 		public DbSet<SensorType> SensorTypes { get; set; }
 		public DbSet<SensorCategory> SensorCategories { get; set; }
@@ -98,12 +96,6 @@ namespace Server.Data
 
 			modelBuilder.Entity<DeviceGroup>()
 				.HasMany(_ => _.Devices).WithOne(_ => _.DeviceGroup).HasForeignKey(_ => _.DeviceGroupID).OnDelete(DeleteBehavior.SetNull);
-
-			modelBuilder.Entity<SystemGroup>()
-				.HasMany(_ => _.Documentations).WithOne(_ => _.SystemGroup).HasForeignKey(_ => _.SystemGroupID).OnDelete(DeleteBehavior.Cascade);
-
-			modelBuilder.Entity<SystemGroupDocumentation>()
-				.HasMany(_ => _.Pages).WithOne(_ => _.Document).HasForeignKey(_ => _.DocumentID).OnDelete(DeleteBehavior.Cascade);
 
 			modelBuilder.Entity<SystemGroup>()
 				.HasMany(_ => _.DeviceGroups).WithOne(_ => _.SystemGroup).HasForeignKey(_ => _.SystemGroupID).OnDelete(DeleteBehavior.SetNull);

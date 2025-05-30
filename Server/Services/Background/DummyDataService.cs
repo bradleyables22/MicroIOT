@@ -73,7 +73,7 @@ namespace Server.Services.Background
 					{
 						GroupTypeID = 2,
 						Alias = "Sail Boat 1",
-						GroupID = "A1D4K41",
+						DeviceGroupID = "A1D4K41",
 						Metadata = new List<Entry>
 							{
 								new Entry{ Key = "IsAreaDefault",Value="true" }
@@ -83,7 +83,7 @@ namespace Server.Services.Background
 					{
 						GroupTypeID = 1,
 						Alias = "Trailer 1",
-						GroupID = "463A44-VF",
+						DeviceGroupID = "463A44-VF",
 						Metadata = new List<Entry>
 							{
 								new Entry{ Key = "VIN",Value="AAAAAA111222DDDEE"}
@@ -95,9 +95,6 @@ namespace Server.Services.Background
 				{
 					_context.DeviceGroups.Add(deviceGroup);
 				}
-
-
-
 
 				await _context.SaveChangesAsync();
 

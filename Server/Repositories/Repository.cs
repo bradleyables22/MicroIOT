@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.Data.Models;
+using Server.Helpers;
 using Server.Repositories.Extensions;
 using Server.Repositories.Models;
 using System.Linq.Expressions;
@@ -11,7 +12,7 @@ namespace Server.Repositories
 	{
 		Task<RepositoryResponse<List<T>>> GetAll();
 		Task<RepositoryResponse<T>> GetById(object id);
-		Task<RepositoryResponse<List<T>>> GetWhere(Expression<Func<T, bool>> predicate);
+		Task<RepositoryResponse<List<T>>> GetWhere(params Expression<Func<T, bool>>[] predicates);
 		Task<RepositoryResponse<T>> Create(T entity);
 		Task<RepositoryResponse<T>> Update(T entity);
 		Task<RepositoryResponse<T>> Delete(object obj);
@@ -65,9 +66,26 @@ namespace Server.Repositories
 
 			return result;
 		}
-		public virtual async Task<RepositoryResponse<List<T>>> GetWhere(Expression<Func<T, bool>> predicate)
+		public virtual async Task<RepositoryResponse<List<T>>> GetWhere(params Expression<Func<T, bool>>[] predicates)
 		{
-			var result = await _context.Set<T>().Where(predicate).ToListAsync().GetResponseAsync();
+			IQueryable<T> query = _context.Set<T>();
+
+			if (predicates != null && predicates.Any())
+			{
+				var parameter = Expression.Parameter(typeof(T));
+				Expression? combined = null;
+
+				foreach (var predicate in predicates)
+				{
+					var replaced = new ParameterReplacer(predicate.Parameters[0], parameter).Visit(predicate.Body);
+					combined = combined == null ? replaced : Expression.AndAlso(combined, replaced);
+				}
+
+				var lambda = Expression.Lambda<Func<T, bool>>(combined!, parameter);
+				query = query.Where(lambda);
+			}
+
+			var result = await query.ToListAsync().GetResponseAsync();
 			return result;
 		}
 		public virtual async Task<RepositoryResponse<T>> Save(T obj)

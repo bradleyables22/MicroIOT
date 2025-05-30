@@ -7,6 +7,20 @@ namespace Server.Repositories.Extensions
 {
 	public static class RepositoryExtensions
 	{
+		public static void AddRepositories(this IServiceCollection services) 
+		{
+			services.AddScoped<ISystemGroupRepository, SystemGroupRepository>();
+			services.AddScoped<IDeviceGroupRepository, DeviceGroupRepository>();
+			services.AddScoped<IDeviceRepository, DeviceRepository>();
+			services.AddScoped<IDeviceSensorRepository, DeviceSensorRepository>();
+			services.AddScoped<IDeviceTypeRepository, DeviceTypeRepository>();
+			services.AddScoped<IDeviceGroupTypeRepository, DeviceGroupTypeRepository>();
+			services.AddScoped<ISensorCategoryRepository, SensorCategoryRepository>();
+			services.AddScoped<ISensorReadingRepository, SensorReadingRepository>();
+			services.AddScoped<ISensorTypeRepository, SensorTypeRepository>();
+			services.AddScoped<IReadingTypeRepository, ReadingTypeRepository>();
+		}
+
 		public static async Task<RepositoryResponse<T>> GetResponseAsync<T>(this Task<T> task)
 		{
 			var response = new RepositoryResponse<T>();

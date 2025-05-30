@@ -1,4 +1,7 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.VisualBasic;
+using Server.DTOs.SensorCategory;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -6,6 +9,30 @@ namespace Server.Data.Models
 {
 	public class SensorCategory:BaseModel
 	{
+		public SensorCategory()
+		{
+			
+		}
+
+		public SensorCategory(CreateSensorCategoryDTO create)
+		{
+			SensorCategoryID = 0;
+			Name = create.Name;
+			Description = create.Description;
+			Metadata = create.Metadata;
+			CreatedOn = DateTime.UtcNow;
+		}
+
+		public SensorCategory(UpdateSensorCategoryDTO update)
+		{
+			SensorCategoryID = update.SensorCategoryID;
+			Name = update.Name;
+			Description = update.Description;
+			Metadata = update.Metadata;
+			CreatedOn = DateTime.UtcNow;
+			DeactivatedOn = update.DeactivatedOn;
+		}
+
 		[Key]
 		[Description("The sensor category ID.")]
 		public long SensorCategoryID { get; set; }

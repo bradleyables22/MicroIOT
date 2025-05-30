@@ -1,11 +1,36 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using Server.DTOs.DeviceSensor;
 
 namespace Server.Data.Models
 {
 	public class DeviceGroupType :BaseModel
 	{
+		public DeviceGroupType()
+		{
+			
+		}
+
+		public DeviceGroupType(CreateDeviceGroupTypeDTO create)
+		{
+			GroupTypeID = 0;
+			Name = create.Name;
+			Description = create.Description;
+			Metadata = create.Metadata;
+			CreatedOn = DateTime.UtcNow;
+		}
+
+		public DeviceGroupType(UpdateDeviceGroupTypeDTO update)
+		{
+			GroupTypeID = update.GroupTypeID;
+			Name = update.Name;
+			Description = update.Description;
+			Metadata = update.Metadata;
+			CreatedOn = update.CreatedOn;
+			DeactivatedOn = update.DeactivatedOn;
+		}
+
 		[Key]
 		[Description("The ID of the device group type.")]
 		public long GroupTypeID { get; set; }

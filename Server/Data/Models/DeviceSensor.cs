@@ -2,11 +2,36 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using System.ComponentModel;
+using Server.DTOs.DeviceSensor;
 
 namespace Server.Data.Models
 {
 	public class DeviceSensor :BaseModel
 	{
+		public DeviceSensor()
+		{
+			
+		}
+
+		public DeviceSensor(CreateDeviceSensorDTO create)
+		{
+			SensorID = create.SensorID;
+			DeviceID = create.DeviceID;
+			SensorTypeID = create.SensorTypeID;
+			Metadata = create.Metadata;
+			CreatedOn = DateTime.UtcNow;
+		}
+
+		public DeviceSensor(UpdateDeviceSensorDTO update)
+		{
+			SensorID = update.SensorID;
+			DeviceID = update.DeviceID;
+			SensorTypeID = update.SensorTypeID;
+			Metadata = update.Metadata;
+			CreatedOn = update.CreatedOn;
+			DeactivatedOn = update.DeactivatedOn;
+		}
+
 		[Key]
 		[Description("The ID of this sensor.")]
 		public string SensorID { get; set; }= Guid.CreateVersion7().ToString("N");

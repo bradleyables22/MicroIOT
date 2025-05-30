@@ -1,36 +1,12 @@
-﻿using Server.DTOs.DeviceType;
-using System.ComponentModel;
+﻿using Server.Data.Models;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace Server.Data.Models
+namespace Server.DTOs.DeviceType
 {
-	public class DeviceType:BaseModel
+	public class UpdateDeviceTypeDTO
 	{
-		public DeviceType()
-		{
-			
-		}
-		public DeviceType(CreateDeviceTypeDTO create)
-		{
-			DeviceTypeID = create.DeviceTypeID;
-			Name = create.Name;
-			Description = create.Description;
-			Metadata = create.Metadata;
-			CreatedOn = DateTime.UtcNow;
-		}
-
-		public DeviceType(UpdateDeviceTypeDTO update)
-		{
-			DeviceTypeID = update.DeviceTypeID;
-			Name = update.Name;
-			Description = update.Description;
-			Metadata = update.Metadata;
-			CreatedOn = update.CreatedOn;
-			DeactivatedOn = update.DeactivatedOn;
-		}
-
-		[Key]
 		[Description("The ID of the device type.")]
 		public string DeviceTypeID { get; set; } = Guid.CreateVersion7().ToString();
 		[Description("The name of the device type.")]
@@ -45,7 +21,5 @@ namespace Server.Data.Models
 		public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 		[Description("When the device type was deactivated, if applicable.")]
 		public DateTime? DeactivatedOn { get; set; }
-		[JsonIgnore]
-		public ICollection<Device>? Devices { get; set; }
 	}
 }
