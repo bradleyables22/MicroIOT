@@ -16,7 +16,19 @@ builder.Services.AddOpenApi("v1");
 
 builder.Services.AddHostedService<DummyDataService>();
 
+builder.Services.AddCors(options => 
+{
+	options.AddPolicy("allow-all", builder =>
+	{
+		builder.AllowAnyOrigin();
+		builder.AllowAnyMethod();
+		builder.AllowAnyHeader();
+	});
+});
+
 var app = builder.Build();
+
+app.UseCors("allow-all");
 
 app.MapOpenApi();
 app.UseHttpsRedirection();
