@@ -2,11 +2,33 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using System.ComponentModel;
+using Server.DTOs.Reading;
 
 namespace Server.Data.Models
 {
 	public class SensorReading : BaseModel
 	{
+		public SensorReading()
+		{
+			
+		}
+
+		public SensorReading(CreateSensorReadingDTO create)
+		{
+			DateTime dt = DateTime.UtcNow;
+
+			ReadingID = 0;
+			SensorID = create.SensorID;
+			ReadingTypeID = create.SensorID;
+			Timestamp = dt;
+			Year = dt.Year;
+			Month = Convert.ToByte(dt.Month);
+			Day = Convert.ToByte(dt.Day);
+			Value = create.Value;
+			Metadata = create.Metadata;
+
+		}
+
 		[Key] // these needs to be here. but you need to composite key this for partitioning. create on sensorid+ partitionkey. setup part
 		[Description("The ID of this reading.")]
 		public long ReadingID { get; set; }

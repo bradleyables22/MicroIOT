@@ -156,7 +156,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteReadingType")
-				.WithDescription("Perminently Delete a reading type")
+				.WithDescription("Perminently delete a reading type")
 				.WithSummary("Delete")
 				.WithName("DeleteReadingType")
 				;

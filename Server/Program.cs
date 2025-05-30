@@ -37,5 +37,6 @@ app.MapDeviceSensorEndpoints();
 app.MapSensorTypeEndpoints();
 app.MapSensorCategoryEndpoints();
 app.MapReadingTypeEndpoints();
+app.MapReadingEndpoints();
 app.Run();
 

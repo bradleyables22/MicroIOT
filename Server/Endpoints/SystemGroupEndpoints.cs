@@ -37,7 +37,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetSystemByID")
-				.WithDescription("Get a system group by a specific ID")
+				.WithDescription("Get a system group by an ID")
 				.WithSummary("By ID")
 				.WithName("GetSystemByID")
 				;
@@ -154,7 +154,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteSystem")
-				.WithDescription("Perminently Delete a system group")
+				.WithDescription("Perminently delete a system group")
 				.WithSummary("Delete")
 				.WithName("DeleteSystem")
 				;

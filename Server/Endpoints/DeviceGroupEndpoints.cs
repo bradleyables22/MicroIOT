@@ -38,7 +38,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetDeviceGroupByID")
-				.WithDescription("Get a specific device group by a specific ID")
+				.WithDescription("Get a specific device group by an ID")
 				.WithSummary("By ID")
 				.WithName("GetDeviceGroupByID")
 				;
@@ -194,7 +194,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDeviceGroup")
-				.WithDescription("Perminently Delete a device group")
+				.WithDescription("Perminently delete a device group")
 				.WithSummary("Delete")
 				.WithName("DeleteDeviceGroup")
 				;

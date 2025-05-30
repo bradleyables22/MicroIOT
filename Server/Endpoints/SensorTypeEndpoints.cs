@@ -155,7 +155,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteSensorType")
-				.WithDescription("Perminently Delete a sensor type")
+				.WithDescription("Perminently delete a sensor type")
 				.WithSummary("Delete")
 				.WithName("DeleteSensorType")
 				;

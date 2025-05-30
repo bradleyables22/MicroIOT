@@ -36,7 +36,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetDeviceByID")
-				.WithDescription("Get a specific device by a specific ID")
+				.WithDescription("Get a specific device by an ID")
 				.WithSummary("By ID")
 				.WithName("GetDeviceByID")
 				;
@@ -155,7 +155,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDevice")
-				.WithDescription("Perminently Delete a device")
+				.WithDescription("Perminently delete a device")
 				.WithSummary("Delete")
 				.WithName("DeleteDevice")
 				;

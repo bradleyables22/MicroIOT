@@ -156,7 +156,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDeviceType")
-				.WithDescription("Perminently Delete a device type")
+				.WithDescription("Perminently delete a device type")
 				.WithSummary("Delete")
 				.WithName("DeleteDeviceType")
 				;
