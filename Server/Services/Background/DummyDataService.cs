@@ -15,95 +15,86 @@ namespace Server.Services.Background
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			try
+			using var scope = _scopeFactory.CreateScope();
+			var _context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+			// Factory System
+			var factorySystem = new SystemGroup
 			{
+				SystemGroupID = 1,
+				Name = "Precision Metalworks Factory",
+				Description = "Factory floor with CNC and Molding machines",
+				Metadata = new List<Entry> { new() { Key = "Location", Value = "Detroit, MI" } }
+			};
+			_context.SystemGroups.Add(factorySystem);
 
-				using var scope = _scopeFactory.CreateScope();
-				var _context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-				var dummySystem = new SystemGroup
-				{
-					SystemGroupID = 1,
-					Name = "Dummy Corp.",
-					Description = "This is a dummy telematics system.",
-					Metadata = new List<Entry> 
-					{
-						new Entry{ Key = "Company",Value="Telematics Corp."},
-						new Entry{ Key = "Street 1",Value="555 Teli Way"},
-						new Entry{ Key = "City",Value="Ferdinand"},
-						new Entry{ Key = "State",Value="IN"},
-						new Entry{ Key = "Zip",Value="47532"}
-					}
-				};
-				_context.SystemGroups.Add(dummySystem);
+			var cncGroupType = new DeviceGroupType { GroupTypeID = 1, Name = "CNC Zone" };
+			var moldingGroupType = new DeviceGroupType { GroupTypeID = 2, Name = "Molding Zone" };
+			_context.DeviceGroupTypes.AddRange(cncGroupType, moldingGroupType);
 
-				List<DeviceGroupType> dummygroupTypes = new ()
-				{
-					new DeviceGroupType
-					{
-						GroupTypeID = 1,
-						Name = "Dry Van Trailer",
-						Description = "Standard Trailer Type",
-						Metadata = new List<Entry>
-							{
-								new Entry{ Key = "Area",Value="Trailers"},
-								new Entry{ Key = "IsAreaDefault",Value="true"}
-							}
-					},
-					new DeviceGroupType
-					{
-						GroupTypeID = 2,
-						Name = "Sailboat",
-						Description = "A primitive boat propelled by sails",
-						Metadata = new List<Entry>
-							{
-								new Entry{ Key = "Area",Value="Watercraft"},
-								new Entry{ Key = "IsAreaDefault",Value="true"}
-							}
-					},
-				};
+			var cncGroup = new DeviceGroup { DeviceGroupID = "CNC-GRP-1", Alias = "CNC Area", SystemGroupID = factorySystem.SystemGroupID, GroupTypeID = cncGroupType.GroupTypeID };
+			var moldingGroup = new DeviceGroup { DeviceGroupID = "MOLD-GRP-1", Alias = "Molding Area", SystemGroupID = factorySystem.SystemGroupID, GroupTypeID = moldingGroupType.GroupTypeID };
+			_context.DeviceGroups.AddRange(cncGroup, moldingGroup);
 
-				foreach (var groupType in dummygroupTypes) 
-				{
-					_context.DeviceGroupTypes.Add(groupType);
-				}
+			var cncLathe = new Device { DeviceID = "CNC-001", Alias = "CNC Lathe", DeviceGroupID = cncGroup.DeviceGroupID };
+			var injectionMolder = new Device { DeviceID = "MOLD-001", Alias = "Injection Molder", DeviceGroupID = moldingGroup.DeviceGroupID };
+			_context.Devices.AddRange(cncLathe, injectionMolder);
 
-				List<DeviceGroup> dummyDeviceGroups = new() 
-				{
-					new DeviceGroup
-					{
-						GroupTypeID = 2,
-						Alias = "Sail Boat 1",
-						DeviceGroupID = "A1D4K41",
-						Metadata = new List<Entry>
-							{
-								new Entry{ Key = "IsAreaDefault",Value="true" }
-							}
-					},
-					new DeviceGroup
-					{
-						GroupTypeID = 1,
-						Alias = "Trailer 1",
-						DeviceGroupID = "463A44-VF",
-						Metadata = new List<Entry>
-							{
-								new Entry{ Key = "VIN",Value="AAAAAA111222DDDEE"}
-							}
-					}
-				};
+			var tempType = new SensorType { SensorTypeID = "TEMP", Name = "Temperature Sensor" };
+			var vibType = new SensorType { SensorTypeID = "VIB", Name = "Vibration Sensor" };
+			_context.SensorTypes.AddRange(tempType, vibType);
 
-				foreach (var deviceGroup in dummyDeviceGroups)
-				{
-					_context.DeviceGroups.Add(deviceGroup);
-				}
+			var tempReadingType = new ReadingType { ReadingTypeID = "TEMP", Name = "Temperature", Units = "C" };
+			var vibReadingType = new ReadingType { ReadingTypeID = "VIB", Name = "Vibration", Units = "mm/s" };
+			_context.ReadingTypes.AddRange(tempReadingType, vibReadingType);
 
-				await _context.SaveChangesAsync();
+			var latheTempSensor = new DeviceSensor { SensorID = "TEMP-CNC-1", DeviceID = cncLathe.DeviceID, SensorTypeID = tempType.SensorTypeID };
+			var molderVibSensor = new DeviceSensor { SensorID = "VIB-MOLD-1", DeviceID = injectionMolder.DeviceID, SensorTypeID = vibType.SensorTypeID };
+			_context.DeviceSensors.AddRange(latheTempSensor, molderVibSensor);
 
-			}
-			catch (Exception e)
+			_context.SensorReadings.AddRange(new[]
 			{
-				Console.WriteLine(e.Message);
-				throw;
-			}
+				new SensorReading { SensorID = latheTempSensor.SensorID, ReadingTypeID = tempReadingType.ReadingTypeID, Value = "68", Timestamp = DateTime.UtcNow },
+				new SensorReading { SensorID = molderVibSensor.SensorID, ReadingTypeID = vibReadingType.ReadingTypeID, Value = "1.2", Timestamp = DateTime.UtcNow }
+			});
+
+			// Telematics System
+			var fleetSystem = new SystemGroup
+			{
+				SystemGroupID = 2,
+				Name = "Fleet Logistics Co.",
+				Description = "GPS-enabled trailer monitoring system",
+				Metadata = new List<Entry> { new() { Key = "FleetSize", Value = "200" } }
+			};
+			_context.SystemGroups.Add(fleetSystem);
+
+			var trailerGroupType = new DeviceGroupType { GroupTypeID = 3, Name = "Dry Van Trailer" };
+			_context.DeviceGroupTypes.Add(trailerGroupType);
+
+			var trailerGroup = new DeviceGroup { DeviceGroupID = "TRAILER-GRP-1", Alias = "Dry Vans", SystemGroupID = fleetSystem.SystemGroupID, GroupTypeID = trailerGroupType.GroupTypeID };
+			_context.DeviceGroups.Add(trailerGroup);
+
+			var trailer1 = new Device { DeviceID = "TRAILER-001", Alias = "Trailer 001", DeviceGroupID = trailerGroup.DeviceGroupID };
+			_context.Devices.Add(trailer1);
+
+			var gpsType = new SensorType { SensorTypeID = "GPS", Name = "GPS Tracker" };
+			_context.SensorTypes.Add(gpsType);
+
+			var gpsReadingType = new ReadingType { ReadingTypeID = "GPS", Name = "GPS Location", Units = "LatLng" };
+			_context.ReadingTypes.Add(gpsReadingType);
+
+			var gpsSensor = new DeviceSensor { SensorID = "GPS-TRAILER-001", DeviceID = trailer1.DeviceID, SensorTypeID = gpsType.SensorTypeID };
+			_context.DeviceSensors.Add(gpsSensor);
+
+			_context.SensorReadings.Add(new SensorReading
+			{
+				SensorID = gpsSensor.SensorID,
+				ReadingTypeID = gpsReadingType.ReadingTypeID,
+				Value = "37.7749,-122.4194",
+				Timestamp = DateTime.UtcNow
+			});
+
+			await _context.SaveChangesAsync();
 		}
 	}
 }
