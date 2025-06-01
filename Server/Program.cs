@@ -50,5 +50,7 @@ app.MapSensorTypeEndpoints();
 app.MapSensorCategoryEndpoints();
 app.MapReadingTypeEndpoints();
 app.MapReadingEndpoints();
+app.MapUtilitiesEndpoints();
+app.MapOtaManifestEndpoints();
 app.Run();
 

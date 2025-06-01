@@ -47,5 +47,7 @@ namespace Server.Data.Models
 		public DateTime? DeactivatedOn { get; set; }
 		[JsonIgnore]
 		public ICollection<Device>? Devices { get; set; }
+		[JsonIgnore]
+		public ICollection<OtaManifestRecord>? Ota_Manifests { get; set; }
 	}
 }

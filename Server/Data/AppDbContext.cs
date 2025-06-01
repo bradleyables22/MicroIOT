@@ -8,6 +8,7 @@ namespace Server.Data
 	{
 		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 		#region Sets
+		public DbSet<OtaManifestRecord> OTA_Manifests { get; set; }
 		public DbSet<SystemGroup> SystemGroups { get; set; }
 		public DbSet<DeviceType> DeviceTypes { get; set; }
 		public DbSet<SensorType> SensorTypes { get; set; }
@@ -25,9 +26,9 @@ namespace Server.Data
 		{
 			#region MetaData Setup
 			modelBuilder.Entity<SystemGroup>()
-	.Property(e => e.Metadata)
-	.HasConversion(JsonValueConverter.ListOfEntryConverter)
-	.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
+			.Property(e => e.Metadata)
+			.HasConversion(JsonValueConverter.ListOfEntryConverter)
+			.Metadata.SetValueComparer(JsonValueConverter.ListOfEntryComparer);
 
 			modelBuilder.Entity<DeviceType>()
 				.Property(e => e.Metadata)
@@ -88,8 +89,12 @@ namespace Server.Data
 
 			modelBuilder.Entity<DeviceSensor>()
 				.HasMany(_ => _.Readings).WithOne(_ => _.Sensor).HasForeignKey(_ => _.SensorID).OnDelete(DeleteBehavior.SetNull);
+
 			modelBuilder.Entity<ReadingType>()
 				.HasMany(_ => _.Readings).WithOne(_ => _.ReadingType).HasForeignKey(_ => _.ReadingTypeID).OnDelete(DeleteBehavior.SetNull);
+
+			modelBuilder.Entity<DeviceType>()
+				.HasMany(_ => _.Ota_Manifests).WithOne(_ => _.DeviceType).HasForeignKey(_ => _.DeviceTypeID).OnDelete(DeleteBehavior.SetNull);
 
 			modelBuilder.Entity<DeviceType>()
 				.HasMany(_ => _.Devices).WithOne(_ => _.DeviceType).HasForeignKey(_ => _.DeviceTypeID).OnDelete(DeleteBehavior.SetNull);

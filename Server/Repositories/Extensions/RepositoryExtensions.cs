@@ -19,6 +19,7 @@ namespace Server.Repositories.Extensions
 			services.AddScoped<ISensorReadingRepository, SensorReadingRepository>();
 			services.AddScoped<ISensorTypeRepository, SensorTypeRepository>();
 			services.AddScoped<IReadingTypeRepository, ReadingTypeRepository>();
+			services.AddScoped<IOtaManifestRepository, OtaManifestRepository>();
 		}
 
 		public static async Task<RepositoryResponse<T>> GetResponseAsync<T>(this Task<T> task)
