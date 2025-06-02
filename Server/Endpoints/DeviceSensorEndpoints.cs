@@ -1,4 +1,5 @@
-﻿using Server.Data.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using Server.Data.Models;
 using Server.DTOs.DeviceGroup;
 using Server.DTOs.DeviceSensor;
 using Server.Extensions;
@@ -12,9 +13,9 @@ namespace Server.Endpoints
 
 			var group = app.MapGroup("api/v1/Sensors").WithTags("Device Sensors");
 
-			group.MapGet("{deviceID}", async (IDeviceSensorRepository _repo, string deviceID) =>
+			group.MapGet("{deviceID}", async (IDeviceSensorRepository _repo, string deviceID, [FromQuery] bool? activeOnly) =>
 			{
-				var result = await _repo.GetWhere(x => x.DeviceID == deviceID);
+				var result = !Convert.ToBoolean(activeOnly) ? await _repo.GetWhere(x => x.DeviceID == deviceID) : await _repo.GetWhere(x => x.DeviceID == deviceID && x.DeactivatedOn == null);
 				return result.AsResponse();
 			})
 				.Produces<List<DeviceSensor>>(200, "application/json")

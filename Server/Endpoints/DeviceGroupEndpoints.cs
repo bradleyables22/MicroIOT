@@ -14,9 +14,9 @@ namespace Server.Endpoints
 
 			var group = app.MapGroup("api/v1/DeviceGroups").WithTags("Device Groups");
 
-			group.MapGet("{systemGroupID}", async (IDeviceGroupRepository _repo, long systemGroupID) =>
+			group.MapGet("{systemGroupID}", async (IDeviceGroupRepository _repo, long systemGroupID, [FromQuery] bool? activeOnly) =>
 			{
-				var result = await _repo.GetWhere(x => x.SystemGroupID == systemGroupID);
+				var result = !Convert.ToBoolean(activeOnly) ? await _repo.GetAll() : await _repo.GetWhere(x => x.DeactivatedOn == null);
 				return result.AsResponse();
 			})
 				.Produces<List<DeviceGroup>>(200, "application/json")

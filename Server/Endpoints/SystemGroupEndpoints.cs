@@ -13,7 +13,21 @@ namespace Server.Endpoints
 
 			var group = app.MapGroup("api/v1/SystemGroups").WithTags("System Groups");
 
-			group.MapGet("",async (ISystemGroupRepository _repo, [FromQuery] string? name) =>
+			group.MapGet("", async (ISystemGroupRepository _repo, [FromQuery] bool? activeOnly) =>
+			{
+				var result = !Convert.ToBoolean(activeOnly) ? await _repo.GetAll() : await _repo.GetWhere(x => x.DeactivatedOn == null);
+				return result.AsResponse();
+			})
+				.Produces<List<SystemGroup>>(200, "application/json")
+				.Produces(204)
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("AllSystems")
+				.WithDescription("Get all system groups")
+				.WithSummary("All")
+				.WithName("AllSystems")
+				;
+
+			group.MapGet("Search",async (ISystemGroupRepository _repo, [FromQuery] string? name) =>
 			{
 				var result = string.IsNullOrEmpty(name) ? await _repo.GetAll():await _repo.GetWhere(x=>x.Name.ToLower().Contains(name.ToLower()));
 				return result.AsResponse();
@@ -22,7 +36,7 @@ namespace Server.Endpoints
 				.Produces(204)
 				.ProducesProblem(500,"application/json")
 				.WithDisplayName("SearchSystems")
-				.WithDescription("Get all system groups")
+				.WithDescription("Get all system groups with optional search by name parameter.")
 				.WithSummary("Search")
 				.WithName("SearchSystems")
 				;

@@ -8,6 +8,7 @@ namespace Server.Data
 	{
 		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 		#region Sets
+		public DbSet<OtaOverrideRecord> OTA_Overrides { get; set; }
 		public DbSet<OtaManifestRecord> OTA_Manifests { get; set; }
 		public DbSet<SystemGroup> SystemGroups { get; set; }
 		public DbSet<DeviceType> DeviceTypes { get; set; }
@@ -104,6 +105,9 @@ namespace Server.Data
 
 			modelBuilder.Entity<SystemGroup>()
 				.HasMany(_ => _.DeviceGroups).WithOne(_ => _.SystemGroup).HasForeignKey(_ => _.SystemGroupID).OnDelete(DeleteBehavior.SetNull);
+
+			modelBuilder.Entity<OtaManifestRecord>()
+				.HasMany(_ => _.Overrides).WithOne(_ => _.Record).HasForeignKey(_ => _.OtaRecordID).OnDelete(DeleteBehavior.Restrict);
 
 			#endregion
 			#region Indexes

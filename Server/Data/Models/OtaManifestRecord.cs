@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Server.Data.Models
 {
@@ -42,8 +43,11 @@ namespace Server.Data.Models
 		[Description("Any related notes for the record.")]
 		[MaxLength(500)]
 		public string? Notes { get; set; }
+		[JsonIgnore]
 		[Description("The Devicetype this firmware is related too.")]
 		[ForeignKey(nameof(DeviceTypeID))]
 		public DeviceType? DeviceType { get; set; }
+		[JsonIgnore]
+		public ICollection<OtaOverrideRecord>? Overrides { get; set; }
 	}
 }

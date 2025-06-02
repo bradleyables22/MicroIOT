@@ -1,4 +1,5 @@
-﻿using Server.Data.DTOs.OtaManifest;
+﻿using Microsoft.AspNetCore.Mvc;
+using Server.Data.DTOs.OtaManifest;
 using Server.Data.Models;
 using Server.Extensions;
 using Server.Repositories;
@@ -12,9 +13,9 @@ namespace Server.Endpoints
 
 			var group = app.MapGroup("api/v1/OTA").WithTags("OTA Manifest");
 
-			group.MapGet("", async (IOtaManifestRepository _repo) =>
+			group.MapGet("", async (IOtaManifestRepository _repo, [FromQuery] bool? activeOnly) =>
 			{
-				var result = await _repo.GetAll();
+				var result = !Convert.ToBoolean(activeOnly) ? await _repo.GetAll() : await _repo.GetWhere(x => x.DeactivatedOn == null);
 				return result.AsResponse();
 			})
 				.Produces<List<OtaManifestRecord>>(200, "application/json")
@@ -40,9 +41,9 @@ namespace Server.Endpoints
 				.WithName("DefaultManifest")
 				;
 
-			group.MapGet("Devicetype/{id}", async (IOtaManifestRepository _repo, string id) =>
+			group.MapGet("Devicetype/{id}", async (IOtaManifestRepository _repo, string id, [FromQuery] bool? activeOnly) =>
 			{
-				var result = await _repo.GetWhere(x=>x.DeviceTypeID == id);
+				var result = !Convert.ToBoolean(activeOnly) ? await _repo.GetWhere(x=>x.DeviceTypeID == id): await _repo.GetWhere(x => x.DeviceTypeID == id && x.DeactivatedOn == null);
 				return result.AsResponse();
 			})
 				.Produces<List<OtaManifestRecord>>(200, "application/json")
@@ -155,6 +156,11 @@ namespace Server.Endpoints
 							title: "Conflict",
 							detail: "Currently Default"
 							);
+					else if (existingResult.Data.DeactivatedOn != null)
+						return Results.Problem(statusCode: 409,
+							title: "Conflict",
+							detail: "Currently Inactive"
+							);
 					else
 					{
 						existingResult.Data.Default = true;
@@ -165,7 +171,7 @@ namespace Server.Endpoints
 								title: "Exception",
 								detail: UpdateResult.Exception?.Message);
 
-						else 
+						else
 						{
 							var othersResult = await _repo.GetWhere(x => x.DeviceTypeID == existingResult.Data.DeviceTypeID, y => y.RecordID != existingResult.Data.RecordID);
 
@@ -173,9 +179,9 @@ namespace Server.Endpoints
 								return Results.Problem(statusCode: 500,
 								title: "Exception",
 								detail: othersResult.Exception?.Message);
-							else 
+							else
 							{
-								if (othersResult.Data != null && othersResult.Data.Any()) 
+								if (othersResult.Data != null && othersResult.Data.Any())
 								{
 									foreach (var other in othersResult.Data)
 									{
@@ -269,6 +275,8 @@ namespace Server.Endpoints
 				{
 					if (existingResult.Data == null)
 						return Results.NotFound();
+
+
 
 					if (existingResult.Data.Default == true)
 						return Results.Problem(statusCode: 409,

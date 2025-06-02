@@ -5,17 +5,13 @@ namespace Server.Extensions
 {
 	public static class EndpointExtensions
 	{
-		public static IResult AsResponse<T>(this RepositoryResponse<T> response) 
+		public static IResult AsResponse<T>(this RepositoryResponse<T> response)
 		{
 			try
 			{
-				if (response.Success) 
-				{
-					if (response.Data == null)
-						return Results.NoContent();
+				if (response.Success)
 					return Results.Ok(response.Data);
-				}
-
+				
 				return Results.Problem(statusCode: 500,
 					title: "Exception",
 					detail: response.Exception?.Message);
@@ -27,6 +23,5 @@ namespace Server.Extensions
 					detail: e.Message);
 			}
 		}
-
 	}
 }
