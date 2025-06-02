@@ -26,6 +26,20 @@ namespace Server.Endpoints
 			.WithName("FullManifest")
 				;
 
+			group.MapGet("Default/{deviceTypeID}", async (IOtaManifestRepository _repo, string deviceTypeID) =>
+			{
+				var result = await _repo.GetWhere(x => x.DeviceTypeID == deviceTypeID && x.Default == true);
+				return result.AsResponse();
+			})
+				.Produces<OtaManifestRecord>(200, "application/json")
+				.Produces(204)
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("DefaultManifest")
+				.WithDescription("Get the default OTA firmware for device type")
+				.WithSummary("Get Default")
+				.WithName("DefaultManifest")
+				;
+
 			group.MapGet("Devicetype/{id}", async (IOtaManifestRepository _repo, string id) =>
 			{
 				var result = await _repo.GetWhere(x=>x.DeviceTypeID == id);
@@ -39,6 +53,7 @@ namespace Server.Endpoints
 				.WithSummary("By Device Type")
 				.WithName("ManifestByDeviceType")
 				;
+
 			group.MapGet("Details/{id}", async (IOtaManifestRepository _repo, long id) =>
 			{
 				var result = await _repo.GetById(id);
