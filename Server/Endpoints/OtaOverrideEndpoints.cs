@@ -21,7 +21,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<OtaOverrideRecord>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("AllOverrides")
 				.WithDescription("Get all device overrides")
@@ -35,7 +34,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<OtaOverrideRecord>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("OverrideByDevice")
 				.WithDescription("Check to see if the given device has a registered OTA override it should use.")
@@ -49,7 +47,6 @@ namespace Server.Endpoints
 				var result = await _repo.Update(new OtaOverrideRecord(update));
 			})
 				.Produces<OtaOverrideRecord>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateOverrideRecord")
 				.WithDescription("Update an OTA override record")
@@ -64,7 +61,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<OtaOverrideRecord>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateOverrideRecord")
 				.WithDescription("Create an OTA override record for a device")
@@ -77,7 +73,6 @@ namespace Server.Endpoints
 				var result = await _repo.Delete(id);
 			})
 				.Produces<OtaOverrideRecord>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteOverrideRecord")
 				.WithDescription("Perminently delete an override")

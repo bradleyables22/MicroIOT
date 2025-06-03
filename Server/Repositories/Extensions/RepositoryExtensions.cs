@@ -21,6 +21,7 @@ namespace Server.Repositories.Extensions
 			services.AddScoped<IReadingTypeRepository, ReadingTypeRepository>();
 			services.AddScoped<IOtaManifestRepository, OtaManifestRepository>();
 			services.AddScoped<IOtaOverrideRepository, OtaOverrideRepository>();
+			services.AddScoped<IOtaDownloadRepository, OtaDownloadRepository>();
 		}
 
 		public static async Task<RepositoryResponse<T>> GetResponseAsync<T>(this Task<T> task)

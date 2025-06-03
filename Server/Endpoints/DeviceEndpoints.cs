@@ -18,7 +18,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<Device>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeviceBydeviceGroup")
 				.WithDescription("Get all device belonging to a device group")
@@ -33,7 +32,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<Device>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetDeviceByID")
 				.WithDescription("Get a specific device by an ID")
@@ -48,7 +46,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<Device>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDevice")
 				.WithDescription("Update a device")
@@ -84,7 +81,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<Device>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateDevice")
@@ -100,7 +97,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<Device>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDevice")
 				.WithDescription("Create a device")
@@ -136,7 +132,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<Device>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateDevice")
@@ -152,7 +148,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<Device>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDevice")
 				.WithDescription("Perminently delete a device")

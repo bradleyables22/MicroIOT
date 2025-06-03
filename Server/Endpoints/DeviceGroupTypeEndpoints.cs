@@ -19,7 +19,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<DeviceGroupType>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeviceGroupTypes")
 				.WithDescription("Get all device group types")
@@ -34,7 +33,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceGroupType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetDeviceGroupTypeByID")
 				.WithDescription("Get a specific device group type by an ID")
@@ -49,7 +47,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceGroupType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDeviceGroupType")
 				.WithDescription("Update a device group type")
@@ -85,7 +82,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceGroupType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateDeviceGroupType")
@@ -101,7 +98,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceGroupType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDeviceGroupType")
 				.WithDescription("Create a device group type")
@@ -137,7 +133,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceGroupType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateDeviceGroupType")
@@ -153,7 +149,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceGroupType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDeviceGroupType")
 				.WithDescription("Perminently delete a device group type")

@@ -20,7 +20,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<ReadingType>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReadingTypes")
 				.WithDescription("Get all reading types")
@@ -35,7 +34,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<ReadingType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetReadingTypeByID")
 				.WithDescription("Get a specific reading type by an ID")
@@ -50,7 +48,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<ReadingType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateReadingType")
 				.WithDescription("Update a reading type")
@@ -86,7 +83,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<ReadingType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateReadingType")
@@ -102,7 +99,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<ReadingType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateReadingType")
 				.WithDescription("Create a reading type")
@@ -138,7 +134,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<ReadingType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateReadingType")
@@ -154,7 +150,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<ReadingType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteReadingType")
 				.WithDescription("Perminently delete a reading type")

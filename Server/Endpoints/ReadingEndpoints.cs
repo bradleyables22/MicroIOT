@@ -33,9 +33,6 @@ namespace Server.Endpoints
 					.Take(take)
 					.ToListAsync();
 
-				if (!results.Any())
-					return Results.NoContent();
-
 				var count = results?.Count ?? 0;
 
 				return Results.Ok(new PagedResponse<SensorReading>
@@ -47,7 +44,6 @@ namespace Server.Endpoints
 				});
 			})
 			.Produces<PagedResponse<SensorReading>>(200, "application/json")
-			.Produces(204)
 			.ProducesProblem(400, "application/json")
 			.ProducesProblem(500, "application/json")
 			.WithName("GetSensorReadings")
@@ -61,7 +57,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorReading>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetReadingByID")
 				.WithDescription("Get a specific sensor reading by an ID")
@@ -93,7 +88,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<SensorReading>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateReading")
 				.WithDescription("Update a sensor reading")
@@ -108,7 +103,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorReading>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateReading")
 				.WithDescription("Create a sensor reading")
@@ -123,7 +117,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorReading>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteReading")
 				.WithDescription("Perminently delete a sensor reading")

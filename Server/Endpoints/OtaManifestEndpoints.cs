@@ -19,7 +19,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<OtaManifestRecord>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("FullManifest")
 				.WithDescription("Get the full OTA manifest")
@@ -33,7 +32,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<OtaManifestRecord>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DefaultManifest")
 				.WithDescription("Get the default OTA firmware for device type")
@@ -47,7 +45,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<OtaManifestRecord>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ManifestByDeviceType")
 				.WithDescription("Get all manifest records for a given device type")
@@ -62,7 +59,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<OtaManifestRecord>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetOtaRecordRecordByID")
 				.WithDescription("Get a specific OTA manifest record by an ID")
@@ -98,7 +94,7 @@ namespace Server.Endpoints
 
 			})
 				.Produces<OtaManifestRecord>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateOtaRecord")
 				.WithDescription("Update an OTA manifest record")
@@ -134,7 +130,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<OtaManifestRecord>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateOtaRecord")
@@ -202,7 +198,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<OtaManifestRecord>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DefaultOtaRecord")
@@ -218,7 +214,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<OtaManifestRecord>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateOtaRecord")
 				.WithDescription("Create an OTA manifest record")
@@ -259,7 +254,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<OtaManifestRecord>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateOtaRecord")
@@ -297,7 +292,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<OtaManifestRecord>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteOtaRecord")
 				.WithDescription("Perminently delete a ota record, you cannot delete an OTA record that is set to default")

@@ -20,7 +20,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<SensorCategory>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("SensorCategories")
 				.WithDescription("Get all sensor categories")
@@ -35,7 +34,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorCategory>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetSensorCategoryByID")
 				.WithDescription("Get a specific sensor category by an ID")
@@ -50,7 +48,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorCategory>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateSensorCategory")
 				.WithDescription("Update a sensor category")
@@ -86,7 +83,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<SensorCategory>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateSensorCategory")
@@ -102,7 +99,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorCategory>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateSensorCategory")
 				.WithDescription("Create a sensor category")
@@ -138,7 +134,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<SensorCategory>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateSensorCategory")
@@ -154,7 +150,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorCategory>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteSensorCategory")
 				.WithDescription("Perminently delete a sensor category")

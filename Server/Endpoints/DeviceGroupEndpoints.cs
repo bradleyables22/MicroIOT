@@ -20,7 +20,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<DeviceGroup>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeviceGroupsBySystem")
 				.WithDescription("Get all device groups belonging to a system group")
@@ -35,7 +34,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceGroup>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetDeviceGroupByID")
 				.WithDescription("Get a specific device group by an ID")
@@ -50,7 +48,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceGroup>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDeviceGroup")
 				.WithDescription("Update a device group")
@@ -86,7 +83,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceGroup>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateDeviceGroup")
@@ -123,7 +120,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceGroup>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ConfirmDeviceGroup")
@@ -139,7 +136,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceGroup>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDeviceGroup")
 				.WithDescription("Create a device group")
@@ -175,7 +171,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceGroup>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateDeviceGroup")
@@ -191,7 +187,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceGroup>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDeviceGroup")
 				.WithDescription("Perminently delete a device group")

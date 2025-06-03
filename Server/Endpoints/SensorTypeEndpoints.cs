@@ -19,7 +19,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<SensorType>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("SensorTypes")
 				.WithDescription("Get all sensor types")
@@ -34,7 +33,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetSensorTypeByID")
 				.WithDescription("Get a specific sensor type by an ID")
@@ -49,7 +47,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateSensorType")
 				.WithDescription("Update a sensor type")
@@ -85,7 +82,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<SensorType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateSensorType")
@@ -101,7 +98,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateSensorType")
 				.WithDescription("Create a sensor type")
@@ -137,7 +133,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<SensorType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateSensorType")
@@ -153,7 +149,7 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SensorType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteSensorType")
 				.WithDescription("Perminently delete a sensor type")

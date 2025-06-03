@@ -8,6 +8,7 @@ namespace Server.Data
 	{
 		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 		#region Sets
+		public DbSet<OtaDownloadRecord> OTA_Downloads { get; set; }
 		public DbSet<OtaOverrideRecord> OTA_Overrides { get; set; }
 		public DbSet<OtaManifestRecord> OTA_Manifests { get; set; }
 		public DbSet<SystemGroup> SystemGroups { get; set; }
@@ -117,6 +118,14 @@ namespace Server.Data
 				.HasIndex(_ => _.Month);
 			modelBuilder.Entity<SensorReading>()
 				.HasIndex(_ => _.Day);
+
+			modelBuilder.Entity<OtaDownloadRecord>()
+				.HasIndex(_ => _.Year);
+			modelBuilder.Entity<OtaDownloadRecord>()
+				.HasIndex(_ => _.Month);
+			modelBuilder.Entity<OtaDownloadRecord>()
+				.HasIndex(_ => _.Day);
+
 			#endregion
 		}
 	}

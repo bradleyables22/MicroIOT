@@ -53,5 +53,6 @@ app.MapReadingEndpoints();
 app.MapUtilitiesEndpoints();
 app.MapOtaManifestEndpoints();
 app.MapOtaOverridesEndpoints();
+app.MapOtaDownloadEndpoints();
 app.Run();
 

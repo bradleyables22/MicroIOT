@@ -20,7 +20,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<DeviceType>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeviceTypes")
 				.WithDescription("Get all device types")
@@ -35,7 +34,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetDeviceTypeByID")
 				.WithDescription("Get a specific device type by an ID")
@@ -50,7 +48,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDeviceType")
 				.WithDescription("Update a device type")
@@ -86,7 +83,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateDeviceType")
@@ -102,7 +99,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDeviceType")
 				.WithDescription("Create a device type")
@@ -138,7 +134,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceType>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateDeviceType")
@@ -154,7 +150,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceType>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDeviceType")
 				.WithDescription("Perminently delete a device type")

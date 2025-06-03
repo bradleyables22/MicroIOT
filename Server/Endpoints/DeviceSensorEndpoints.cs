@@ -19,7 +19,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<DeviceSensor>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("SensorsByDevice")
 				.WithDescription("Get all sensors belonging to a device")
@@ -34,7 +33,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceSensor>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("SensorByID")
 				.WithDescription("Get a specific device sensor by an ID")
@@ -49,7 +47,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceSensor>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDeviceSensor")
 				.WithDescription("Update a device sensor")
@@ -84,7 +81,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceSensor>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateDeviceSensor")
@@ -100,7 +97,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceSensor>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDeviceSensor")
 				.WithDescription("Create a device sensor")
@@ -136,7 +132,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<DeviceSensor>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateDeviceSensor")
@@ -152,7 +148,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<DeviceSensor>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDeviceSensor")
 				.WithDescription("Perminently delete a device sensor")

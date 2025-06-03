@@ -19,7 +19,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<SystemGroup>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("AllSystems")
 				.WithDescription("Get all system groups")
@@ -33,7 +32,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<List<SystemGroup>>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500,"application/json")
 				.WithDisplayName("SearchSystems")
 				.WithDescription("Get all system groups with optional search by name parameter.")
@@ -48,7 +46,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SystemGroup>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetSystemByID")
 				.WithDescription("Get a system group by an ID")
@@ -63,7 +60,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SystemGroup>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateSystemGroup")
 				.WithDescription("Update a system group")
@@ -98,7 +94,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<SystemGroup>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("ReactivateSystem")
@@ -113,7 +109,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SystemGroup>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateSystem")
 				.WithDescription("Create a system group")
@@ -149,7 +144,7 @@ namespace Server.Endpoints
 				}
 			})
 				.Produces<SystemGroup>(200, "application/json")
-				.Produces(204)
+				.Produces(404)
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeactivateSystem")
@@ -165,7 +160,6 @@ namespace Server.Endpoints
 				return result.AsResponse();
 			})
 				.Produces<SystemGroup>(200, "application/json")
-				.Produces(204)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteSystem")
 				.WithDescription("Perminently delete a system group")
