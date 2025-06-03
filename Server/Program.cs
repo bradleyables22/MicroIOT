@@ -4,6 +4,7 @@ using Server.Data;
 using Server.Endpoints;
 using Server.Repositories.Extensions;
 using Server.Services.Background;
+using Server.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddRepositories();
 
-builder.Services.AddOpenApi("v1");
+builder.Services.AddOpenApi("v1", options => 
+{
+	options.AddDocumentTransformer<TitleTransformer>();
+});
 
 builder.Services.AddHostedService<DummyDataService>();
 
