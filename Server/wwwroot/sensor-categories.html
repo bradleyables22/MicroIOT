@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/icons/bootstrap-icons.min.css">
+    <script defer src="js/alpine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl)
+        })
+    </script>
+    <script>
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+        var toastList = toastElList.map(function (toastEl) {
+            return new bootstrap.Toast(toastEl, option)
+        })
+    </script>
+
+    <title>Sensor Categories</title>
+
+    <style>
+
+        .sidebar {
+            width: 60px;
+            height: 100vh;
+            position: fixed;
+        }
+
+            .sidebar .nav-link {
+                padding: 1rem 0;
+                text-align: center;
+            }
+
+        .content {
+            margin-left: 60px;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar d-flex flex-column align-items-center pt-3 bg-dark" x-ignore>
+        <a href="/" class="nav-link text-white" title="Dashboard" data-bs-toggle="tooltip">
+            <i class="bi bi-speedometer2 fs-4"></i>
+        </a>
+        <a href="systems" class="nav-link text-white" title="System Groups" data-bs-toggle="tooltip">
+            <i class="bi bi-diagram-3 fs-4"></i>
+        </a>
+        <a href="device-types" class="nav-link text-white" title="Device Types" data-bs-toggle="tooltip">
+            <i class="bi bi-cpu fs-4"></i>
+        </a>
+        <a href="sensor-categories" class="nav-link text-primary" title="Sensor Categories" data-bs-toggle="tooltip">
+            <i class="bi bi-collection fs-4"></i>
+        </a>
+        <a href="sensor-types" class="nav-link text-white" title="Sensor Types" data-bs-toggle="tooltip">
+            <i class="bi bi-sliders fs-4"></i>
+        </a>
+        <a href="reading-types" class="nav-link text-white" title="Reading Types" data-bs-toggle="tooltip">
+            <i class="bi bi-graph-up fs-4"></i>
+        </a>
+    </div>
+    <div class="content">
+        <div class="container-fluid" x-cloak>
+            <div class="row">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

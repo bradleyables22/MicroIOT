@@ -1,0 +1,15 @@
+﻿.sidebar {
+    width: 60px !important;
+    height: 100vh !important;
+    position: fixed !important;
+}
+
+    .sidebar .nav-link {
+        padding: 1rem 0 !important;
+        text-align: center !important;
+    }
+
+.content {
+    margin-left: 60px !important;
+    padding: 2rem !important;
+}

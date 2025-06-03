@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Server.Data;
@@ -32,8 +33,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("allow-all");
+var rewrite = new RewriteOptions()
+	.AddRewrite(@"^(?!swagger|scalar|api|metrics)([a-zA-Z0-9/_-]+)$", "$1.html", skipRemainingRules: true)
+	.AddRewrite(@"^(?!swagger|scalar|api|metrics)pages/([a-zA-Z0-9/_-]+)$", "pages/$1.html", skipRemainingRules: true);
 
+app.UseRewriter(rewrite);
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.UseCors("allow-all");
 app.MapOpenApi();
 app.UseHttpsRedirection();
 app.MapScalarApiReference(options => 

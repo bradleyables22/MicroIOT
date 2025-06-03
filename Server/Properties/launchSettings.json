@@ -4,7 +4,7 @@
     "Https": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "scalar", 
+      "launchUrl": "", 
       "applicationUrl": "https://localhost:7113;http://localhost:5110",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
