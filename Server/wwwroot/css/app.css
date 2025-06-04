@@ -13,3 +13,11 @@
     margin-left: 60px !important;
     padding: 2rem !important;
 }
+.hover-grow {
+    transition: transform 0.2s ease-in-out;
+}
+
+    .hover-grow:hover {
+        transform: scale(1.1);
+        z-index:5;
+    }
