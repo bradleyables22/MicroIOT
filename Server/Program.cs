@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
+using MQTTnet.Server;
 using Scalar.AspNetCore;
 using Server.Data;
 using Server.Endpoints;
 using Server.Repositories.Extensions;
+using Server.Services;
 using Server.Services.Background;
 using Server.Transformers;
 
@@ -20,7 +22,7 @@ builder.Services.AddOpenApi("v1", options =>
 });
 
 builder.Services.AddHostedService<DummyDataService>();
-
+builder.Services.AddHostedService<MqttService>();
 builder.Services.AddCors(options => 
 {
 	options.AddPolicy("allow-all", builder =>
@@ -32,7 +34,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
 var rewrite = new RewriteOptions()
 	.AddRewrite(@"^(?!swagger|scalar|api|metrics)([a-zA-Z0-9/_-]+)$", "$1.html", skipRemainingRules: true)
 	.AddRewrite(@"^(?!swagger|scalar|api|metrics)pages/([a-zA-Z0-9/_-]+)$", "pages/$1.html", skipRemainingRules: true);
