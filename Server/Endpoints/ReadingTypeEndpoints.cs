@@ -143,7 +143,7 @@ namespace Server.Endpoints
 				.WithName("DeactivateReadingType")
 				;
 
-			group.MapDelete("Delete", async (IReadingTypeRepository _repo, string id) =>
+			group.MapDelete("Delete/{id}", async (IReadingTypeRepository _repo, string id) =>
 			{
 				var result = await _repo.Delete(id);
 

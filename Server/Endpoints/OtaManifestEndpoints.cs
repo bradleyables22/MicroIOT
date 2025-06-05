@@ -263,7 +263,7 @@ namespace Server.Endpoints
 				.WithName("DeactivateOtaRecord")
 				;
 
-			group.MapDelete("Delete", async (IOtaManifestRepository _repo, long id) =>
+			group.MapDelete("Delete/{id}", async (IOtaManifestRepository _repo, long id) =>
 			{
 				var existingResult = await _repo.GetById(id);
 				if (existingResult.Success)

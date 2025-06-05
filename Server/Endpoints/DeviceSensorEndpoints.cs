@@ -180,7 +180,7 @@ namespace Server.Endpoints
 				.WithName("SensorPush")
 				;
 
-			group.MapDelete("Delete", async (IDeviceSensorRepository _repo, string id) =>
+			group.MapDelete("Delete/{id}", async (IDeviceSensorRepository _repo, string id) =>
 			{
 				var result = await _repo.Delete(id);
 

@@ -220,7 +220,7 @@ namespace Server.Endpoints
 				.WithName("DeactivateDeviceGroup")
 				;
 
-			group.MapDelete("Delete", async (IDeviceGroupRepository _repo, string id) =>
+			group.MapDelete("Delete/{id}", async (IDeviceGroupRepository _repo, string id) =>
 			{
 				var result = await _repo.Delete(id);
 

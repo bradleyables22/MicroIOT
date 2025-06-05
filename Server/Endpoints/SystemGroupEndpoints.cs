@@ -153,7 +153,7 @@ namespace Server.Endpoints
 				.WithName("DeactivateSystem")
 				;
 
-			group.MapDelete("Delete", async (ISystemGroupRepository _repo, long id) =>
+			group.MapDelete("Delete/{id}", async (ISystemGroupRepository _repo, long id) =>
 			{
 				var result = await _repo.Delete(id);
 

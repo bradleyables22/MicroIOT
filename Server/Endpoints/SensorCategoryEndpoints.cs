@@ -182,7 +182,7 @@ namespace Server.Endpoints
 				.WithName("DeactivateSensorCategory")
 				;
 
-			group.MapDelete("Delete", async (ISensorCategoryRepository _repo, long id) =>
+			group.MapDelete("Delete/{id}", async (ISensorCategoryRepository _repo, long id) =>
 			{
 				var result = await _repo.Delete(id);
 

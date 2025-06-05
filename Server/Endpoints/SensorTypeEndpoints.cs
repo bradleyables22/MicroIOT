@@ -181,7 +181,7 @@ namespace Server.Endpoints
 				.WithName("DeactivateSensorType")
 				;
 
-			group.MapDelete("Delete", async (ISensorTypeRepository _repo, string id) =>
+			group.MapDelete("Delete/{id}", async (ISensorTypeRepository _repo, string id) =>
 			{
 				var result = await _repo.Delete(id);
 

@@ -110,7 +110,7 @@ namespace Server.Endpoints
 				.WithName("CreateReading")
 				;
 
-			group.MapDelete("Delete", async (ISensorReadingRepository _repo, long id) =>
+			group.MapDelete("Delete/{id}", async (ISensorReadingRepository _repo, long id) =>
 			{
 				var result = await _repo.Delete(id);
 
