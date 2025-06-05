@@ -22,7 +22,9 @@ builder.Services.AddOpenApi("v1", options =>
 });
 
 builder.Services.AddHostedService<DummyDataService>();
-builder.Services.AddHostedService<MqttService>();
+builder.Services.AddSingleton<MqttService>();
+builder.Services.AddHostedService<MqttBackgroundService>();
+
 builder.Services.AddCors(options => 
 {
 	options.AddPolicy("allow-all", builder =>

@@ -1,8 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MQTTnet;
+using MQTTnet.Protocol;
+using MQTTnet.Server;
 using Server.Data.Models;
 using Server.DTOs.SensorType;
 using Server.Extensions;
+using Server.Models.PushMessages;
 using Server.Repositories;
+using Server.Services;
 
 namespace Server.Endpoints
 {
@@ -103,6 +108,40 @@ namespace Server.Endpoints
 				.WithDescription("Create a sensor type")
 				.WithSummary("Create")
 				.WithName("CreateSensorType")
+				;
+
+			group.MapPost("MQTT/Push", async (MqttService _mqtt, SensorTypePushMessage pushItem) =>
+			{
+				try
+				{
+					var message = new InjectedMqttApplicationMessage(
+					   new MqttApplicationMessage
+					   {
+						   Topic = $"sensortype/{pushItem.SensorTypeID}/commands",
+						   Payload = pushItem.GetMessageBytes(),
+						   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+						   Retain = false
+					   });
+
+
+					await _mqtt.PublishAsync(message);
+
+					return Results.Accepted();
+
+				}
+				catch (Exception e)
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: e.Message);
+				}
+			})
+				.Produces(202)
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("SensorTypePush")
+				.WithDescription("Push a message to a specific type of sensor. This is published to the topic 'sensortype/{SensorTypeID}/commands'")
+				.WithSummary("MQTT Push")
+				.WithName("SensorTypePush")
 				;
 
 			group.MapDelete("Deactivate", async (ISensorTypeRepository _repo, string id) =>

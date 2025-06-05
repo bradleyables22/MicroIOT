@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MQTTnet;
+using MQTTnet.Protocol;
+using MQTTnet.Server;
 using Server.Data.Models;
 using Server.DTOs.SensorCategory;
 using Server.DTOs.SensorType;
 using Server.Extensions;
+using Server.Models.PushMessages;
 using Server.Repositories;
+using Server.Services;
 
 namespace Server.Endpoints
 {
@@ -104,6 +109,40 @@ namespace Server.Endpoints
 				.WithDescription("Create a sensor category")
 				.WithSummary("Create")
 				.WithName("CreateSensorCategory")
+				;
+
+			group.MapPost("MQTT/Push", async (MqttService _mqtt, SensorCategoryPushMessage pushItem) =>
+			{
+				try
+				{
+					var message = new InjectedMqttApplicationMessage(
+					   new MqttApplicationMessage
+					   {
+						   Topic = $"sensorcategory/{pushItem.SensorCategoryID}/commands",
+						   Payload = pushItem.GetMessageBytes(),
+						   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+						   Retain = false
+					   });
+
+
+					await _mqtt.PublishAsync(message);
+
+					return Results.Accepted();
+
+				}
+				catch (Exception e)
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: e.Message);
+				}
+			})
+				.Produces(202)
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("SensorCatPush")
+				.WithDescription("Push a message to a category of sensors. This is published to the topic 'sensorcategory/{SensorCategoryID}/commands'")
+				.WithSummary("MQTT Push")
+				.WithName("SensorCatPush")
 				;
 
 			group.MapDelete("Deactivate", async (ISensorCategoryRepository _repo, long id) =>

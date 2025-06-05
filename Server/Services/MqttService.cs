@@ -4,19 +4,19 @@ using MQTTnet.Server;
 using Server.Data.Models;
 using Server.DTOs.Reading;
 using Server.Repositories;
+using System.Diagnostics.Contracts;
 
 namespace Server.Services
 {
-	public class MqttService : BackgroundService
+	public class MqttService
 	{
-		private MqttServer? _mqttServer;
+		private MqttServer _mqttServer;
 		private readonly IServiceScopeFactory _scopeFactory;
 		public MqttService(IServiceScopeFactory scopeFactory)
 		{
+
 			_scopeFactory = scopeFactory;
-		}
-		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-		{
+
 			var optionsBuilder = new MqttServerOptionsBuilder()
 				.WithDefaultEndpoint()
 				.WithDefaultEndpointPort(433)
@@ -29,24 +29,27 @@ namespace Server.Services
 			_mqttServer.InterceptingSubscriptionAsync += InterceptSubscriptionAsync;
 			_mqttServer.InterceptingPublishAsync += InterceptApplicationMessagePublishAsync;
 			_mqttServer.ClientDisconnectedAsync += ClientDisconnectedAsync;
+		}
+
+		public async Task PublishAsync(InjectedMqttApplicationMessage message)
+		{
+			await _mqttServer.InjectApplicationMessage(message);
+
+		}
+		public async Task StartAsync() 
+		{
 			await _mqttServer.StartAsync();
+		}
 
-			try
-			{
-				await Task.Delay(Timeout.Infinite, stoppingToken);
-			}
-			catch (TaskCanceledException)
-			{
-				Console.WriteLine("Mqtt Shutdown");
-			}
-
+		public async Task StopAsync() 
+		{
 			await _mqttServer.StopAsync();
 		}
 
 		private Task ValidateConnectionAsync(ValidatingConnectionEventArgs args)
 		{
 			Console.WriteLine($"Client '{args.ClientId}' is connecting...");
-			args.ReasonCode = MQTTnet.Protocol.MqttConnectReasonCode.Success;
+			args.ReasonCode = MqttConnectReasonCode.Success;
 			return Task.CompletedTask;
 		}
 
@@ -110,5 +113,7 @@ namespace Server.Services
 			Console.WriteLine($"Client '{args.ClientId}' disconnected.");
 			return Task.CompletedTask;
 		}
+
+
 	}
 }

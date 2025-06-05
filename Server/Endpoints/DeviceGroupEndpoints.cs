@@ -1,9 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MQTTnet;
+using MQTTnet.Protocol;
+using MQTTnet.Server;
 using Server.Data.Models;
 using Server.DTOs.DeviceGroup;
 using Server.DTOs.SystemGroup;
 using Server.Extensions;
+using Server.Models.PushMessages;
 using Server.Repositories;
+using Server.Services;
+using System.Text;
 
 namespace Server.Endpoints
 {
@@ -141,6 +147,40 @@ namespace Server.Endpoints
 				.WithDescription("Create a device group")
 				.WithSummary("Create")
 				.WithName("CreateDeviceGroup")
+				;
+
+			group.MapPost("MQTT/Push", async (MqttService _mqtt, DeviceGroupPushMessage pushItem) =>
+			{
+				try
+				{
+					var message = new InjectedMqttApplicationMessage(
+					   new MqttApplicationMessage
+					   {
+						   Topic = $"devicegroup/{pushItem.DeviceGroupID}/commands",
+						   Payload = pushItem.GetMessageBytes(),
+						   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+						   Retain = false
+					   });
+
+
+					await _mqtt.PublishAsync(message);
+
+					return Results.Accepted();
+
+				}
+				catch (Exception e)
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: e.Message);
+				}
+			})
+				.Produces(202)
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("DeviceGroupPush")
+				.WithDescription("Push a message to a device group. This is published to the topic 'devicegroup/{DeviceGroupID}/commands'")
+				.WithSummary("MQTT Push")
+				.WithName("DeviceGroupPush")
 				;
 
 			group.MapDelete("Deactivate", async (IDeviceGroupRepository _repo, string id) =>

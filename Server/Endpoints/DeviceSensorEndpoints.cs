@@ -1,9 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MQTTnet;
+using MQTTnet.Protocol;
+using MQTTnet.Server;
 using Server.Data.Models;
 using Server.DTOs.DeviceGroup;
 using Server.DTOs.DeviceSensor;
 using Server.Extensions;
+using Server.Models.PushMessages;
 using Server.Repositories;
+using Server.Services;
 namespace Server.Endpoints
 {
 	public static class DeviceSensorEndpoints
@@ -139,6 +144,40 @@ namespace Server.Endpoints
 				.WithDescription("Deactivate a device sensor")
 				.WithSummary("Deactivate")
 				.WithName("DeactivateDeviceSensor")
+				;
+
+			group.MapPost("MQTT/Push", async (MqttService _mqtt, DeviceSensorPushMessage pushItem) =>
+			{
+				try
+				{
+					var message = new InjectedMqttApplicationMessage(
+					   new MqttApplicationMessage
+					   {
+						   Topic = $"devicegroup/{pushItem.DeviceGroupID}/device/{pushItem.DeviceID}/sensor/{pushItem.SensorID}/commands",
+						   Payload = pushItem.GetMessageBytes(),
+						   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+						   Retain = false
+					   });
+
+
+					await _mqtt.PublishAsync(message);
+
+					return Results.Accepted();
+
+				}
+				catch (Exception e)
+				{
+					return Results.Problem(statusCode: 500,
+					title: "Exception",
+					detail: e.Message);
+				}
+			})
+				.Produces(202)
+				.ProducesProblem(500, "application/json")
+				.WithDisplayName("SensorPush")
+				.WithDescription("Push a message to a device sensor. This is published to the topic 'devicegroup/{DeviceGroupID}/device/{DeviceID}/sensor/{SensorID}/commands'")
+				.WithSummary("MQTT Push")
+				.WithName("SensorPush")
 				;
 
 			group.MapDelete("Delete", async (IDeviceSensorRepository _repo, string id) =>
