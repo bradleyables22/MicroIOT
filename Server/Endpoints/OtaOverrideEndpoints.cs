@@ -1,16 +1,13 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using MQTTnet;
+﻿using MQTTnet;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
-using Server.Data.DTOs.OtaManifest;
 using Server.Data.DTOs.OtaOverride;
 using Server.Data.Models;
 using Server.Extensions;
+using Server.Models.Mqtt.Ota;
 using Server.Repositories;
 using Server.Services;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Server.Endpoints
 {
@@ -34,7 +31,7 @@ namespace Server.Endpoints
 			    .WithName("AllOverrides")
 				;
 
-			group.MapGet("Find/{deviceID}", async (IOtaOverrideRepository _repo, string deviceID) =>
+			group.MapGet("Details/{deviceID}", async (IOtaOverrideRepository _repo, string deviceID) =>
 			{
 				var result = await _repo.GetById(deviceID);
 				return result.AsResponse();
@@ -59,12 +56,12 @@ namespace Server.Endpoints
 
 					if (otaRecord.Success && otaRecord.Data != null)
 					{
-						var json = JsonSerializer.Serialize(new { otaRecord.Data.Version, otaRecord.Data.Url, otaRecord.Data.DeviceTypeID, Action="Update" });
+						var json = JsonSerializer.Serialize(new  OtaMessage(otaRecord.Data,"update"));
 
 						var message = new InjectedMqttApplicationMessage(
 						   new MqttApplicationMessage
 						   {
-							   Topic = $"devicegroup/{update.DeviceGroupID}/device/{update.DeviceID}/ota",
+							   Topic = $"ota/devicegroup/{update.DeviceGroupID}/device/{update.DeviceID}",
 							   Payload = json.GetByteSequence(),
 							   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
 							   Retain = false
@@ -80,7 +77,7 @@ namespace Server.Endpoints
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateOverrideRecord")
 				.WithDescription("""
-					Update an OTA override record for a device. This will be published to the MQTT Topic 'devicegroup/{DeviceGroupID}/device/{DeviceID}/ota' in JSON format:
+					Update an OTA override record for a device. This will be published to the MQTT Topic 'ota/devicegroup/{DeviceGroupID}/device/{DeviceID}' in JSON format:
 
 					{
 					  "version": "1.2.3",
@@ -104,12 +101,12 @@ namespace Server.Endpoints
 
 					if (otaRecord.Success && otaRecord.Data != null)
 					{
-						var json = JsonSerializer.Serialize(new { otaRecord.Data.Version, otaRecord.Data.Url, otaRecord.Data.DeviceTypeID , Action = "create"});
+						var json = JsonSerializer.Serialize(new OtaMessage(otaRecord.Data,"assigned"));
 
 						var message = new InjectedMqttApplicationMessage(
 						   new MqttApplicationMessage
 						   {
-							   Topic = $"devicegroup/{create.DeviceGroupID}/device/{create.DeviceID}/ota",
+							   Topic = $"ota/devicegroup/{create.DeviceGroupID}/device/{create.DeviceID}",
 							   Payload = json.GetByteSequence(),
 							   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
 							   Retain = false
@@ -126,7 +123,7 @@ namespace Server.Endpoints
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateOverrideRecord")
 				.WithDescription("""
-					Create an OTA override record for a device. This will be published to the MQTT Topic 'devicegroup/{DeviceGroupID}/device/{DeviceID}/ota' in JSON format:
+					Create an OTA override record for a device. This will be published to the MQTT Topic 'ota/devicegroup/{DeviceGroupID}/device/{DeviceID}' in JSON format:
 
 					{
 					  "version": "1.2.3",
@@ -155,12 +152,12 @@ namespace Server.Endpoints
 						if (defaultRecords.Success && defaultRecords.Data != null && defaultRecords.Data.Any())
 						{
 							var defaultRecord = defaultRecords.Data.FirstOrDefault();
-							var json = JsonSerializer.Serialize(new { defaultRecord?.Version, defaultRecord?.Url, defaultRecord?.DeviceTypeID, Action = "revert" });
+							var json = JsonSerializer.Serialize(new OtaMessage(otaRecord.Data,"revert"));
 
 							var message = new InjectedMqttApplicationMessage(
 							   new MqttApplicationMessage
 							   {
-								   Topic = $"devicegroup/{result.Data.DeviceGroupID}/device/{result.Data.DeviceID}/ota",
+								   Topic = $"ota/devicegroup/{result.Data.DeviceGroupID}/device/{result.Data.DeviceID}",
 								   Payload = json.GetByteSequence(),
 								   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
 								   Retain = false
@@ -178,7 +175,7 @@ namespace Server.Endpoints
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteOverrideRecord")
 				.WithDescription("""
-					Delete an OTA override record. The default firmware information will be published to the MQTT Topic 'devicegroup/{DeviceGroupID}/device/{DeviceID}/ota' in JSON format:
+					Delete an OTA override record. The default firmware information will be published to the MQTT Topic 'ota/devicegroup/{DeviceGroupID}/device/{DeviceID}' in JSON format:
 
 					{
 					  "version": "1.2.3",

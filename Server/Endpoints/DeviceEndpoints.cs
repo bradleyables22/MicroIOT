@@ -115,7 +115,7 @@ namespace Server.Endpoints
 					var message = new InjectedMqttApplicationMessage(
 					   new MqttApplicationMessage
 					   {
-						   Topic = $"devicegroup/{pushItem.DeviceGroupID}/device/{pushItem.DeviceID}/commands",
+						   Topic = $"command/devicegroup/{pushItem.DeviceGroupID}/device/{pushItem.DeviceID}",
 						   Payload = pushItem.GetMessageBytes(),
 						   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
 						   Retain = false
@@ -137,7 +137,7 @@ namespace Server.Endpoints
 				.Produces(202)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DevicePush")
-				.WithDescription("Push a message to a device. This is published to the topic 'devicegroup/{DeviceGroupID}/device/{DeviceID}/commands'")
+				.WithDescription("Push a message to a device. This is published to the topic 'command/devicegroup/{DeviceGroupID}/device/{DeviceID}'")
 				.WithSummary("MQTT Push")
 				.WithName("DevicePush")
 				;

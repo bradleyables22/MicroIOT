@@ -1,8 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MQTTnet;
+using MQTTnet.Protocol;
+using MQTTnet.Server;
 using Server.Data.DTOs.OtaManifest;
 using Server.Data.Models;
 using Server.Extensions;
+using Server.Models.Mqtt.Ota;
 using Server.Repositories;
+using Server.Services;
+using System.Text.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Server.Endpoints
 {
@@ -139,7 +146,7 @@ namespace Server.Endpoints
 				.WithName("ReactivateOtaRecord")
 				;
 
-			group.MapPut("Default", async (IOtaManifestRepository _repo, long id) =>
+			group.MapPut("Default", async (IOtaManifestRepository _repo, MqttService _mqtt, long id) =>
 			{
 				var existingResult = await _repo.GetById(id);
 				if (existingResult.Success)
@@ -185,6 +192,19 @@ namespace Server.Endpoints
 										_ = await _repo.Update(other);
 									}
 								}
+								var json = JsonSerializer.Serialize(new OtaMessage(existingResult.Data,"default"));
+
+								var message = new InjectedMqttApplicationMessage(
+								   new MqttApplicationMessage
+								   {
+									   Topic = $"ota/devicetype/{existingResult.Data.DeviceTypeID}",
+									   Payload = json.GetByteSequence(),
+									   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+									   Retain = false
+								   });
+
+								await _mqtt.PublishAsync(message);
+
 								return existingResult.AsResponse();
 							}
 						}
@@ -202,7 +222,16 @@ namespace Server.Endpoints
 				.ProducesProblem(409, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DefaultOtaRecord")
-				.WithDescription("Set an OTA manifest record to the default for a specific device type")
+				.WithDescription("""
+					Set an OTA manifest record as a default. This will be published to the MQTT Topic 'ota/devicetype/{DeviceTypeID}' in JSON format:
+
+					{
+					  "version": "1.2.3",
+					  "url": "https://example.com/firmware.bin",
+					  "deviceTypeID": 123,
+					  "action": "update"
+					}
+					""")
 				.WithSummary("Set Default")
 				.WithName("DefaultOtaRecord")
 				;

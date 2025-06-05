@@ -118,7 +118,7 @@ namespace Server.Endpoints
 					var message = new InjectedMqttApplicationMessage(
 					   new MqttApplicationMessage
 					   {
-						   Topic = $"sensorcategory/{pushItem.SensorCategoryID}/commands",
+						   Topic = $"command/sensorcategory/{pushItem.SensorCategoryID}",
 						   Payload = pushItem.GetMessageBytes(),
 						   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
 						   Retain = false
@@ -140,7 +140,7 @@ namespace Server.Endpoints
 				.Produces(202)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("SensorCatPush")
-				.WithDescription("Push a message to a category of sensors. This is published to the topic 'sensorcategory/{SensorCategoryID}/commands'")
+				.WithDescription("Push a message to a category of sensors. This is published to the topic 'command/sensorcategory/{SensorCategoryID}'")
 				.WithSummary("MQTT Push")
 				.WithName("SensorCatPush")
 				;
