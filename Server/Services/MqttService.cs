@@ -3,6 +3,7 @@ using MQTTnet;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
 using MQTTnet.Server.Internal;
+using Server.Data.DTOs.OtaDownload;
 using Server.Data.Models;
 using Server.DTOs.Device;
 using Server.DTOs.DeviceGroup;
@@ -91,6 +92,9 @@ namespace Server.Services
 					case "sensors":
 						response = await HandleDeviceSensorPublish(topic, payload, args);
 						break;
+					case "downloads":
+						response = await HandleOtaPublish(topic, payload, args);
+						break;
 					default:
 						break;
 				}
@@ -165,7 +169,7 @@ namespace Server.Services
 							break;
 						case "update":
 							var updateObj = JsonSerializer.Deserialize<UpdateDeviceGroupDTO>(payload);
-							var updateResult = await repo.Create(new DeviceGroup(updateObj));
+							var updateResult = await repo.Update(new DeviceGroup(updateObj));
 							if (!updateResult.Success)
 							{
 								succuss = false;
@@ -268,7 +272,7 @@ namespace Server.Services
 							break;
 						case "update":
 							var updateObj = JsonSerializer.Deserialize<UpdateDeviceDTO>(payload);
-							var updateResult = await repo.Create(new Device(updateObj));
+							var updateResult = await repo.Update(new Device(updateObj));
 							if (!updateResult.Success)
 							{
 								succuss = false;
@@ -346,7 +350,7 @@ namespace Server.Services
 							break;
 						case "update":
 							var updateObj = JsonSerializer.Deserialize<UpdateDeviceSensorDTO>(payload);
-							var updateResult = await repo.Create(new DeviceSensor(updateObj));
+							var updateResult = await repo.Update(new DeviceSensor(updateObj));
 							if (!updateResult.Success)
 							{
 								succuss = false;
@@ -398,5 +402,56 @@ namespace Server.Services
 				return new HandleEndpointResponse { Success = false, Reason = "exception thrown" };
 			}
 		}
+
+		private async Task<HandleEndpointResponse> HandleOtaPublish(string topic, string? payload, InterceptingPublishEventArgs args) 
+		{
+			bool succuss = true;
+			string reason = string.Empty;
+			try
+			{
+				var endpoint = topic?.Split("/").Skip(1).FirstOrDefault();
+				using var scope = _scopeFactory.CreateScope();
+				var repo = scope.ServiceProvider.GetRequiredService<IOtaDownloadRepository>();
+
+				switch (endpoint)
+				{
+					case "create":
+						var createObj = JsonSerializer.Deserialize<CreateOtaDownloadRecordDTO>(payload);
+						var createResult = await repo.Create(new OtaDownloadRecord(createObj));
+						if (!createResult.Success)
+						{
+							succuss = false;
+							reason = "Create Failure";
+						}
+						break;
+					case "update":
+						var updateObj = JsonSerializer.Deserialize<UpdateOtaDownloadRecordDTO>(payload);
+						var updateResult = await repo.Update(new OtaDownloadRecord(updateObj));
+						if (!updateResult.Success)
+						{
+							succuss = false;
+							reason = "Update Failure";
+						}
+						break;
+					case "delete":
+						var deleteResult = await repo.Delete(Convert.ToInt64(topic.Split("/").Skip(2).FirstOrDefault()));
+						if (!deleteResult.Success)
+						{
+							succuss = false;
+							reason = "Delete Failure";
+						}
+						break;
+					default:
+						break;
+				}
+
+				return new HandleEndpointResponse { Success = succuss, Reason = reason };
+			}
+			catch (Exception)
+			{
+				return new HandleEndpointResponse { Success = false, Reason = "Exception Thrown" };
+			}
+		}
+
 	}
 }

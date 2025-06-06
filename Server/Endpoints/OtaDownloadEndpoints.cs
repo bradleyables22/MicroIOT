@@ -77,7 +77,7 @@ namespace Server.Endpoints
 				.Produces<OtaDownloadRecord>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDownloadRecord")
-				.WithDescription("Update an OTA download record")
+				.WithDescription("Update an OTA download record. This is also available via MQTT by posting on 'downloads/update'. Device Group ID should be used for clientId as well.")
 				.WithSummary("Update")
 				.WithName("UpdateDownloadRecord")
 				;
@@ -91,7 +91,7 @@ namespace Server.Endpoints
 				.Produces<OtaDownloadRecord>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDownloadRecord")
-				.WithDescription("Create an OTA download record")
+				.WithDescription("Create an OTA download record. This is also available via MQTT by posting on 'downloads/create'. Device Group ID should be used for clientId as well.")
 				.WithSummary("Create")
 				.WithName("CreateDownloadRecord")
 				;
@@ -105,7 +105,7 @@ namespace Server.Endpoints
 				.Produces<OtaDownloadRecord>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDownloadRecord")
-				.WithDescription("Perminently delete an OTA download record")
+				.WithDescription("Perminently delete an OTA download record. This is also available via MQTT by posting on 'downloads/delete/{id}'. Device Group ID should be used for clientId as well.")
 				.WithSummary("Delete")
 				.WithName("DeleteDownloadRecord")
 				;
