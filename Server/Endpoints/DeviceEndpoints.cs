@@ -25,7 +25,7 @@ namespace Server.Endpoints
 				.Produces<List<Device>>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeviceBydeviceGroup")
-				.WithDescription("Get all device belonging to a device group")
+				.WithDescription("Get all device belonging to a device group. This is also available via MQTT by pinging on 'devices/{devicegroupID}'. Listen on 'get/devicegroup/{devicegroupID}/devices' for response.. Device Group ID should be used for clientId.")
 				.WithSummary("By Device Group")
 				.WithName("DeviceByDeviceGroup")
 				;
@@ -39,7 +39,7 @@ namespace Server.Endpoints
 				.Produces<Device>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetDeviceByID")
-				.WithDescription("Get a specific device by an ID")
+				.WithDescription("Get a specific device by an ID. This is also available via MQTT by pinging on 'devices/details/{deviceID}'. Listen on 'get/devicegroup/{devicegroupID}/device/{deviceID}' for response. Device Group ID should be used for clientId.")
 				.WithSummary("By ID")
 				.WithName("GetDeviceByID")
 				;
@@ -53,7 +53,7 @@ namespace Server.Endpoints
 				.Produces<Device>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDevice")
-				.WithDescription("Update a device")
+				.WithDescription("Update a device. This is also available via MQTT by posting on 'devices/update'. Device Group ID should be used for clientId.")
 				.WithSummary("Update")
 				.WithName("UpdateDevice")
 				;
@@ -104,7 +104,7 @@ namespace Server.Endpoints
 				.Produces<Device>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDevice")
-				.WithDescription("Create a device")
+				.WithDescription("Create a device. This is also available via MQTT by posting on 'devices/update'. Device Group ID should be used for clientId.")
 				.WithSummary("Create")
 				.WithName("CreateDevice")
 				;
@@ -187,7 +187,7 @@ namespace Server.Endpoints
 				.Produces<Device>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDevice")
-				.WithDescription("Perminently delete a device")
+				.WithDescription("Perminently delete a device. This is also available via MQTT by pinging on 'devices/delete/{deviceID}'. Device Group ID should be used for clientId.")
 				.WithSummary("Delete")
 				.WithName("DeleteDevice")
 				;

@@ -1,10 +1,19 @@
-﻿using MQTTnet;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using MQTTnet;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
+using MQTTnet.Server.Internal;
 using Server.Data.Models;
+using Server.DTOs.Device;
+using Server.DTOs.DeviceGroup;
+using Server.DTOs.DeviceSensor;
 using Server.DTOs.Reading;
+using Server.Extensions;
+using Server.Models.Mqtt;
 using Server.Repositories;
 using System.Diagnostics.Contracts;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Server.Services
 {
@@ -12,6 +21,7 @@ namespace Server.Services
 	{
 		private MqttServer _mqttServer;
 		private readonly IServiceScopeFactory _scopeFactory;
+		private readonly List<string> crudWords = new List<string>() { "create", "update", "delete"};
 		public MqttService(IServiceScopeFactory scopeFactory)
 		{
 
@@ -20,6 +30,7 @@ namespace Server.Services
 			var optionsBuilder = new MqttServerOptionsBuilder()
 				.WithDefaultEndpoint()
 				.WithDefaultEndpointPort(433)
+				.WithDefaultEndpointPort(80)
 				.WithoutEncryptedEndpoint()
 				;
 
@@ -61,51 +72,41 @@ namespace Server.Services
 
 		private async Task InterceptApplicationMessagePublishAsync(InterceptingPublishEventArgs args)
 		{
-			var topic = args.ApplicationMessage.Topic;
-			var payload = args.ApplicationMessage.ConvertPayloadToString();
-
-			Console.WriteLine($"Message published to '{topic}': {payload}");
-
-			if (topic == "readings")
+			
+			try
 			{
-				using var scope = _scopeFactory.CreateScope();
-				var repo = scope.ServiceProvider.GetRequiredService<ISensorReadingRepository>();
-				var reason = string.Empty;
-				try
+				var topic = args.ApplicationMessage.Topic;
+				var payload = args.ApplicationMessage.ConvertPayloadToString();
+
+				HandleEndpointResponse response = new();
+
+				switch (topic.Split("/").FirstOrDefault())
 				{
-					var reading = System.Text.Json.JsonSerializer.Deserialize<CreateSensorReadingDTO>(payload);
-					if (reading != null)
-					{
-						var result = await repo.Create(new SensorReading(reading));
-						if (result.Success && result.Data != null)
-						{
-							reason = "Success";
-							args.Response.ReasonCode = MqttPubAckReasonCode.Success;
-							Console.WriteLine($"Sensor {result.Data.SensorID} successfully published data");
-						}
-						else
-						{
-							reason = $"Sensor {result?.Data?.SensorID} failed to publish {payload}";
-							args.Response.ReasonCode = MqttPubAckReasonCode.UnspecifiedError;
-							Console.WriteLine($"Sensor {result?.Data?.SensorID} failed to publish {payload}");
-						}
-					}
-					else
-					{
-						reason = $"Unknown sensor failed to publish {payload}";
-						args.Response.ReasonCode = MqttPubAckReasonCode.UnspecifiedError;
-						args.Response.ReasonString = reason;
-						Console.WriteLine(reason);
-					}
+					case "devicegroups":
+						response = await HandleDeviceGroupPublish(topic, payload, args);
+						break;
+					case "devices":
+						response = await HandleDevicePublish(topic, payload, args);
+						break;
+					case "sensors":
+						response = await HandleDeviceSensorPublish(topic, payload, args);
+						break;
+					default:
+						break;
 				}
-				catch (Exception ex)
-				{
-					reason = $"Sensor publishing failure: {ex.Message}";
-					args.Response.ReasonCode = MqttPubAckReasonCode.UnspecifiedError;
-					args.Response.ReasonString = reason;
-					Console.WriteLine(reason);
-				}
+
+				args.Response.ReasonCode = response.Success ? MqttPubAckReasonCode.Success : MqttPubAckReasonCode.UnspecifiedError;
+				args.Response.ReasonString = response.Reason;
 			}
+			catch (Exception)
+			{
+				args.Response.ReasonCode = MqttPubAckReasonCode.UnspecifiedError;
+				args.Response.ReasonString = "Exception Thrown";
+			}
+			finally 
+			{
+				Console.WriteLine($"{args.ClientId} published to {args.ApplicationMessage.Topic}");
+			} 
 		}
 
 		private Task ClientDisconnectedAsync(ClientDisconnectedEventArgs args)
@@ -114,6 +115,288 @@ namespace Server.Services
 			return Task.CompletedTask;
 		}
 
+		private async Task<HandleEndpointResponse> HandleDeviceGroupPublish(string topic, string? payload, InterceptingPublishEventArgs args) 
+		{
+			bool succuss = true;
+			string reason = string.Empty;
+			try
+			{
+				var endpoint = topic?.Split("/").Skip(1).FirstOrDefault();
+				using var scope = _scopeFactory.CreateScope();
+				var repo = scope.ServiceProvider.GetRequiredService<IDeviceGroupRepository>();
+				string detailsString = $"details/{args.ClientId}";
 
+
+				if (topic.Contains(detailsString))
+				{
+					var result = await repo.GetById(args.ClientId);
+					if (result.Success && result.Data != null)
+					{
+						var message = new InjectedMqttApplicationMessage(
+						   new MqttApplicationMessage
+						   {
+							   Topic = $"get/devicegroup/{args.ClientId}",
+							   Payload = JsonSerializer.Serialize(result.Data).GetByteSequence(),
+							   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+							   Retain = false
+						   });
+
+						await PublishAsync(message);
+						reason = $"get/devicegroup/{args.ClientId}";
+					}
+					else
+					{
+						succuss = false;
+						reason = "Get Failure";
+					}
+				}
+				else
+				{
+					switch (endpoint)
+					{
+						case "create":
+							var createObj = JsonSerializer.Deserialize<CreateDeviceGroupDTO>(payload);
+							var createResult = await repo.Create(new DeviceGroup(createObj));
+							if (!createResult.Success)
+							{
+								succuss = false;
+								reason = "Create Failure";
+							}
+							break;
+						case "update":
+							var updateObj = JsonSerializer.Deserialize<UpdateDeviceGroupDTO>(payload);
+							var updateResult = await repo.Create(new DeviceGroup(updateObj));
+							if (!updateResult.Success)
+							{
+								succuss = false;
+								reason = "Update Failure";
+							}
+							break;
+						case "delete":
+							var deleteResult = await repo.Delete(args.ClientId);
+							if (!deleteResult.Success)
+							{
+								succuss = false;
+								reason = "Delete Failure";
+							}
+							break;
+						default:
+							break;
+					}
+				}
+				return new HandleEndpointResponse { Success = succuss, Reason = reason };
+			}
+			catch (Exception)
+			{
+				return new HandleEndpointResponse { Success = false, Reason = "exception thrown" };
+			}
+		}
+
+		private async Task<HandleEndpointResponse> HandleDevicePublish(string topic, string? payload, InterceptingPublishEventArgs args)
+		{
+			bool succuss = true;
+			string reason = string.Empty;
+			try
+			{
+				var endpoint = topic?.Split("/").Skip(1).FirstOrDefault();
+				using var scope = _scopeFactory.CreateScope();
+				var repo = scope.ServiceProvider.GetRequiredService<IDeviceRepository>();
+				string detailsString = $"details";
+
+
+				if (topic.Contains(detailsString))
+				{
+					var id = topic?.Split("/").Skip(2).FirstOrDefault();
+
+					var result = await repo.GetById(id);
+					if (result.Success && result.Data != null)
+					{
+						var message = new InjectedMqttApplicationMessage(
+						   new MqttApplicationMessage
+						   {
+							   Topic = $"get/devicegroup/{args.ClientId}/device/{id}",
+							   Payload = JsonSerializer.Serialize(result.Data).GetByteSequence(),
+							   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+							   Retain = false
+						   });
+
+						await PublishAsync(message);
+						reason = $"get/devicegroup/{args.ClientId}/device/{id}";
+					}
+					else
+					{
+						succuss = false;
+						reason = "Get Failure";
+					}
+				}
+				else if (endpoint == args.ClientId) 
+				{
+					var result = await repo.GetWhere(x => x.DeviceGroupID == args.ClientId);
+
+					if (result.Success && result.Data != null)
+					{
+						var message = new InjectedMqttApplicationMessage(
+						   new MqttApplicationMessage
+						   {
+							   Topic = $"get/devicegroup/{args.ClientId}/devices",
+							   Payload = JsonSerializer.Serialize(result.Data).GetByteSequence(),
+							   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+							   Retain = false
+						   });
+
+						await PublishAsync(message);
+						reason = $"get/devicegroup/{args.ClientId}/devices";
+					}
+					else
+					{
+						succuss = false;
+						reason = "Get Failure";
+					}
+				}
+				else
+				{
+					switch (endpoint)
+					{
+						case "create":
+							var createObj = JsonSerializer.Deserialize<CreateDeviceDTO>(payload);
+							var createResult = await repo.Create(new Device(createObj));
+							if (!createResult.Success)
+							{
+								succuss = false;
+								reason = "Create Failure";
+							}
+							break;
+						case "update":
+							var updateObj = JsonSerializer.Deserialize<UpdateDeviceDTO>(payload);
+							var updateResult = await repo.Create(new Device(updateObj));
+							if (!updateResult.Success)
+							{
+								succuss = false;
+								reason = "Update Failure";
+							}
+							break;
+						case "delete":
+							var deleteResult = await repo.Delete(topic.Split("/").Skip(2).FirstOrDefault());
+							if (!deleteResult.Success)
+							{
+								succuss = false;
+								reason = "Delete Failure";
+							}
+							break;
+						default:
+							break;
+					}
+				}
+				return new HandleEndpointResponse { Success = succuss, Reason = reason };
+			}
+			catch (Exception)
+			{
+				return new HandleEndpointResponse { Success = false, Reason = "exception thrown" };
+			}
+		}
+
+		private async Task<HandleEndpointResponse> HandleDeviceSensorPublish(string topic, string? payload, InterceptingPublishEventArgs args)
+		{
+			bool succuss = true;
+			string reason = string.Empty;
+			try
+			{
+				var endpoint = topic?.Split("/").Skip(1).FirstOrDefault();
+				using var scope = _scopeFactory.CreateScope();
+				var repo = scope.ServiceProvider.GetRequiredService<IDeviceSensorRepository>();
+				string detailsString = $"details";
+
+				if (topic.Contains(detailsString))
+				{
+					var id = topic?.Split("/").Skip(2).FirstOrDefault();
+
+					var result = await repo.GetById(id);
+					if (result.Success && result.Data != null)
+					{
+						var message = new InjectedMqttApplicationMessage(
+						   new MqttApplicationMessage
+						   {
+							   Topic = $"get/devicegroup/{args.ClientId}/device/{endpoint}/sesnor/{id}",
+							   Payload = JsonSerializer.Serialize(result.Data).GetByteSequence(),
+							   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+							   Retain = false
+						   });
+
+						await PublishAsync(message);
+						reason = $"get/devicegroup/{args.ClientId}/device/{endpoint}/sensor/{id}";
+					}
+					else
+					{
+						succuss = false;
+						reason = "Get Failure";
+					}
+				}
+				else if (crudWords.Contains(endpoint))
+				{
+					switch (endpoint)
+					{
+						case "create":
+							var createObj = JsonSerializer.Deserialize<CreateDeviceSensorDTO>(payload);
+							var createResult = await repo.Create(new DeviceSensor(createObj));
+							if (!createResult.Success)
+							{
+								succuss = false;
+								reason = "Create Failure";
+							}
+							break;
+						case "update":
+							var updateObj = JsonSerializer.Deserialize<UpdateDeviceSensorDTO>(payload);
+							var updateResult = await repo.Create(new DeviceSensor(updateObj));
+							if (!updateResult.Success)
+							{
+								succuss = false;
+								reason = "Update Failure";
+							}
+							break;
+						case "delete":
+							var deleteResult = await repo.Delete(topic.Split("/").Skip(2).FirstOrDefault());
+							if (!deleteResult.Success)
+							{
+								succuss = false;
+								reason = "Delete Failure";
+							}
+							break;
+						default:
+							break;
+					}
+				}
+				else if (!string.IsNullOrEmpty(endpoint))
+				{
+					var result = await repo.GetWhere(x => x.DeviceID == endpoint);
+
+					if (result.Success && result.Data != null)
+					{
+						var message = new InjectedMqttApplicationMessage(
+						   new MqttApplicationMessage
+						   {
+							   Topic = $"get/devicegroup/{args.ClientId}/device/{endpoint}/sensors",
+							   Payload = JsonSerializer.Serialize(result.Data).GetByteSequence(),
+							   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+							   Retain = false
+						   });
+
+						await PublishAsync(message);
+						reason = $"get/devicegroup/{args.ClientId}/device/{endpoint}/sensors";
+					}
+					else
+					{
+						succuss = false;
+						reason = "Get Failure";
+					}
+				}
+
+
+				return new HandleEndpointResponse { Success = succuss, Reason = reason };
+			}
+			catch (Exception)
+			{
+				return new HandleEndpointResponse { Success = false, Reason = "exception thrown" };
+			}
+		}
 	}
 }

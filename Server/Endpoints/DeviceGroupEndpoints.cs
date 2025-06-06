@@ -42,7 +42,7 @@ namespace Server.Endpoints
 				.Produces<DeviceGroup>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("GetDeviceGroupByID")
-				.WithDescription("Get a specific device group by an ID")
+				.WithDescription("Get a specific device group by an ID. This is also available via MQTT by pinging on 'devicegroups/details/{devicegroupID}'. Listen on 'get/devicegroup/{devicegroupID}' for response. Device Group ID should be used for clientId as well.")
 				.WithSummary("By ID")
 				.WithName("GetDeviceGroupByID")
 				;
@@ -56,7 +56,7 @@ namespace Server.Endpoints
 				.Produces<DeviceGroup>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDeviceGroup")
-				.WithDescription("Update a device group")
+				.WithDescription("Update a device group.This is also available via MQTT by posting on 'devicegroups/update'. Device Group ID should be used for clientId as well.")
 				.WithSummary("Update")
 				.WithName("UpdateDeviceGroup")
 				;
@@ -144,7 +144,7 @@ namespace Server.Endpoints
 				.Produces<DeviceGroup>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDeviceGroup")
-				.WithDescription("Create a device group")
+				.WithDescription("Create a device group. This is also available via MQTT by posting on 'devicegroups/create'. Device Group ID should be used for clientId as well.")
 				.WithSummary("Create")
 				.WithName("CreateDeviceGroup")
 				;
@@ -229,7 +229,7 @@ namespace Server.Endpoints
 				.Produces<DeviceGroup>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDeviceGroup")
-				.WithDescription("Perminently delete a device group")
+				.WithDescription("Perminently delete a device group. This is also available via MQTT by pinging on 'devicegroups/delete/{devicegroupID}'. Device Group ID should be used for clientId as well.")
 				.WithSummary("Delete")
 				.WithName("DeleteDeviceGroup")
 				;

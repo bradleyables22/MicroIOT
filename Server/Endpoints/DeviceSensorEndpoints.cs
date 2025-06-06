@@ -26,7 +26,7 @@ namespace Server.Endpoints
 				.Produces<List<DeviceSensor>>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("SensorsByDevice")
-				.WithDescription("Get all sensors belonging to a device")
+				.WithDescription("Get all sensors belonging to a device. This is also available via MQTT by pinging on 'sensors/{deviceID}'. Listen on 'get/devicegroup/{devicegroupID}/device/{deviceID}/sensors' for response. Device Group ID should be used for clientId.")
 				.WithSummary("By Device")
 				.WithName("SensorsBydevice")
 				;
@@ -40,7 +40,7 @@ namespace Server.Endpoints
 				.Produces<DeviceSensor>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("SensorByID")
-				.WithDescription("Get a specific device sensor by an ID")
+				.WithDescription("Get a specific device sensor by an ID. This is also available via MQTT by pinging on 'sensors/details/{sensorID}'. Listen on 'get/devicegroup/{devicegroupID}/device/{devicedID}/sensor/{sensorID}' for response. Device Group ID should be used for clientId.")
 				.WithSummary("By ID")
 				.WithName("SensorByID")
 				;
@@ -54,7 +54,7 @@ namespace Server.Endpoints
 				.Produces<DeviceSensor>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateDeviceSensor")
-				.WithDescription("Update a device sensor")
+				.WithDescription("Update a device sensor. This is also available via MQTT by posting on 'sensors/update'. Device Group ID should be used for clientId.")
 				.WithSummary("Update")
 				.WithName("UpdateDeviceSensor")
 				;
@@ -104,7 +104,7 @@ namespace Server.Endpoints
 				.Produces<DeviceSensor>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateDeviceSensor")
-				.WithDescription("Create a device sensor")
+				.WithDescription("Create a device sensor. This is also available via MQTT by posting on 'sensors/create'. Device Group ID should be used for clientId.")
 				.WithSummary("Create")
 				.WithName("CreateDeviceSensor")
 				;
@@ -189,7 +189,7 @@ namespace Server.Endpoints
 				.Produces<DeviceSensor>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteDeviceSensor")
-				.WithDescription("Perminently delete a device sensor")
+				.WithDescription("Perminently delete a device sensor. This is also available via MQTT by pinging on 'sensors/delete/{sensorID}'. Device Group ID should be used for clientId.")
 				.WithSummary("Delete")
 				.WithName("DeleteDeviceSensor")
 				;
