@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using MQTTnet.Server;
 using Scalar.AspNetCore;
+using Server.Components;
 using Server.Data;
 using Server.Endpoints;
 using Server.Repositories.Extensions;
@@ -35,18 +36,16 @@ builder.Services.AddCors(options =>
 	});
 });
 
-var app = builder.Build();
-var rewrite = new RewriteOptions()
-	.AddRewrite(@"^(?!swagger|scalar|api|metrics)([a-zA-Z0-9/_-]+)$", "$1.html", skipRemainingRules: true)
-	.AddRewrite(@"^(?!swagger|scalar|api|metrics)pages/([a-zA-Z0-9/_-]+)$", "pages/$1.html", skipRemainingRules: true);
+builder.Services.AddRazorComponents()
+	.AddInteractiveServerComponents();
 
-app.UseRewriter(rewrite);
-app.UseDefaultFiles();
-app.UseStaticFiles();
+
+var app = builder.Build();
 
 app.UseCors("allow-all");
 app.MapOpenApi();
 app.UseHttpsRedirection();
+app.UseAntiforgery();
 app.MapScalarApiReference(options => 
 {
 	options.Title = "Micro IOT";
@@ -69,5 +68,12 @@ app.MapUtilitiesEndpoints();
 app.MapOtaManifestEndpoints();
 app.MapOtaOverridesEndpoints();
 app.MapOtaDownloadEndpoints();
+
+
+app.UseStaticFiles();
+app.MapStaticAssets();
+
+app.MapRazorComponents<App>()
+	.AddInteractiveServerRenderMode();
 app.Run();
 
