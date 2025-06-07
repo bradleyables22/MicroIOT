@@ -15,6 +15,7 @@ using Server.Repositories;
 using System.Diagnostics.Contracts;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Server.Services
 {
@@ -91,6 +92,9 @@ namespace Server.Services
 						break;
 					case "sensors":
 						response = await HandleDeviceSensorPublish(topic, payload, args);
+						break;
+					case "readings":
+						response = await HandleReadingsPublish(topic, payload, args);
 						break;
 					case "downloads":
 						response = await HandleOtaPublish(topic, payload, args);
@@ -453,5 +457,56 @@ namespace Server.Services
 			}
 		}
 
+		private async Task<HandleEndpointResponse> HandleReadingsPublish(string topic, string? payload, InterceptingPublishEventArgs args)
+		{
+			bool succuss = true;
+			string reason = string.Empty;
+			try
+			{
+				var endpoint = topic?.Split("/").Skip(1).FirstOrDefault();
+				using var scope = _scopeFactory.CreateScope();
+				var repo = scope.ServiceProvider.GetRequiredService<ISensorReadingRepository>();
+
+				switch (endpoint)
+				{
+					case "create":
+						var createObj = JsonSerializer.Deserialize<CreateSensorReadingDTO>(payload);
+						var createResult = await repo.Create(new SensorReading(createObj));
+						if (!createResult.Success)
+						{
+							succuss = false;
+							reason = "Create Failure";
+						}
+						break;
+					case "update":
+						var updateObj = JsonSerializer.Deserialize<UpdateSensorReadingDTO>(payload);
+
+						var existingResult = await repo.GetById(updateObj.ReadingID);
+						if (existingResult.Success && existingResult.Data != null)
+						{
+							existingResult.Data.SensorID = updateObj.SensorID;
+							existingResult.Data.Value = updateObj.Value;
+							existingResult.Data.Metadata = updateObj.Metadata;
+							existingResult.Data.ReadingTypeID = updateObj.ReadingTypeID;
+
+							var updateResult = await repo.Update(existingResult.Data);
+						}
+						else
+						{
+							succuss = false;
+							reason = "Update Failure";
+						}
+						break;
+					default:
+						break;
+				}
+
+				return new HandleEndpointResponse { Success = succuss, Reason = reason };
+			}
+			catch (Exception)
+			{
+				return new HandleEndpointResponse { Success = false, Reason = "exception thrown" };
+			}
+		}
 	}
 }

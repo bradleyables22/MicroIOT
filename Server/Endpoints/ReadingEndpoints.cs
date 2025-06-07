@@ -91,7 +91,7 @@ namespace Server.Endpoints
 				.Produces(404)
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("UpdateReading")
-				.WithDescription("Update a sensor reading")
+				.WithDescription("Update a sensor reading. This is also available via MQTT by posting on 'readings/update'. Device Group ID should be used for clientId.")
 				.WithSummary("Update")
 				.WithName("UpdateReading")
 				;
@@ -105,7 +105,7 @@ namespace Server.Endpoints
 				.Produces<SensorReading>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("CreateReading")
-				.WithDescription("Create a sensor reading")
+				.WithDescription("Create a sensor reading. This is also available via MQTT by posting on 'readings/create'. Device Group ID should be used for clientId.")
 				.WithSummary("Create")
 				.WithName("CreateReading")
 				;
@@ -119,7 +119,7 @@ namespace Server.Endpoints
 				.Produces<SensorReading>(200, "application/json")
 				.ProducesProblem(500, "application/json")
 				.WithDisplayName("DeleteReading")
-				.WithDescription("Perminently delete a sensor reading")
+				.WithDescription("Perminently delete a sensor reading.")
 				.WithSummary("Delete")
 				.WithName("DeleteReading")
 				;
