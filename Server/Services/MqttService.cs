@@ -12,16 +12,13 @@ using Server.DTOs.Reading;
 using Server.Extensions;
 using Server.Models.Mqtt;
 using Server.Repositories;
-using System.Diagnostics.Contracts;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Server.Services
 {
 	public class MqttService
 	{
-		private MqttServer _mqttServer;
+		public MqttServer _mqttServer;
 		private readonly IServiceScopeFactory _scopeFactory;
 		private readonly List<string> crudWords = new List<string>() { "create", "update", "delete"};
 		public MqttService(IServiceScopeFactory scopeFactory)
@@ -51,12 +48,14 @@ namespace Server.Services
 		}
 		public async Task StartAsync() 
 		{
-			await _mqttServer.StartAsync();
+			if (!_mqttServer.IsStarted)
+				await _mqttServer.StartAsync();
 		}
 
 		public async Task StopAsync() 
 		{
-			await _mqttServer.StopAsync();
+			if (_mqttServer.IsStarted)
+				await _mqttServer.StopAsync();
 		}
 
 		private Task ValidateConnectionAsync(ValidatingConnectionEventArgs args)
