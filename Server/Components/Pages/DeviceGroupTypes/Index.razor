@@ -1,0 +1,114 @@
+﻿@page "/device-group-types"
+@using Server.DTOs.DeviceSensor
+@using Server.Data.Models
+@using Server.Repositories
+@inject IDeviceGroupTypeRepository _repo;
+
+<PageTitle>Device Group Types</PageTitle>
+<div class="btn btn-primary">New Type</div>
+<!-- Table -->
+<table class="table table-hover mt-3">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (deviceGroupTypes != null && deviceGroupTypes.Any())
+        {
+            foreach (var dgt in deviceGroupTypes)
+            {
+                var activeStatement = dgt.DeactivatedOn == null ? "Active" : "Inactive";
+
+                <tr class="table-active" @onclick="() => ShowDetails(dgt)">
+                    <td>@dgt.GroupTypeID</td>
+                    <td>@dgt.Name</td>
+                    <td>@activeStatement</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<!-- Offcanvas Panel -->
+<div class="offcanvas offcanvas-end show "data-bs-backdrop="false" tabindex="-1" id="detailsBlade" aria-labelledby="offcanvasLabel" style="visibility:@(selectedItem != null ? "visible" : "hidden"); display:@(selectedItem != null ? "block" : "none");">
+    <div class="offcanvas-header">
+        <h4 class="offcanvas-title" id="offcanvasLabel">Details</h4>
+        <button type="button" class="btn-close" aria-label="Close" @onclick="HideDetails"></button>
+    </div>
+    <div class="offcanvas-body">
+        @if (selectedItem != null)
+        {
+            <dl class="row">
+                <dt class="col-sm-4">ID</dt>
+                <dd class="col-sm-8">@selectedItem.GroupTypeID</dd>
+
+                <dt class="col-sm-4">Name</dt>
+                <dd class="col-sm-8"><InputText class="form-control" @bind-Value="@selectedItem.Name"/></dd>
+
+                <dt class="col-sm-4">Status</dt>
+                <dd class="col-sm-8">
+                    @if (selectedItem.DeactivatedOn == null)
+                    {
+                        <div class="btn btn-sm btn-success" @onclick="()=>{selectedItem.DeactivatedOn = DateTime.UtcNow;}">Active</div>
+                        
+                    }
+                    else
+                    {
+                         <div class="btn btn-sm btn-danger" @onclick="()=>{selectedItem.DeactivatedOn = null;}">Inactive</div>
+                    }
+                </dd>
+            </dl>
+            <hr/>
+            <p class="text-center fw-bold">Description</p>
+            <InputTextArea class="form-control" style="height:100px;" @bind-Value="@selectedItem.Description"/>
+
+            <hr/>
+            if (selectedItem.Metadata != null && selectedItem.Metadata.Any())
+            {
+                <dl class="row">
+
+                </dl>
+            }
+            <div class="text-center">
+                 <div class="btn btn-sm btn-secondary">New</div>
+            </div>
+            <hr/>
+            <div class="btn w-100 btn-sm btn-warning">Sace Changes</div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<DeviceGroupType>? deviceGroupTypes = new();
+    private DeviceGroupType? selectedItem;
+    private CreateDeviceGroupTypeDTO create = new();
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await _repo.GetAll();
+        if (result.Success)
+        {
+            deviceGroupTypes = result.Data;
+        }
+    }
+
+    private void ShowDetails(DeviceGroupType dgt)
+    {
+        selectedItem = new DeviceGroupType
+        {
+            GroupTypeID = dgt.GroupTypeID,
+            Name = dgt.Name,
+            Description = dgt.Description,
+            CreatedOn = dgt.CreatedOn,
+            DeactivatedOn = dgt.DeactivatedOn,
+            Metadata = dgt.Metadata
+        } ;
+    }
+
+    private void HideDetails()
+    {
+        selectedItem = null;
+    }
+}

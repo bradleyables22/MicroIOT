@@ -24,7 +24,7 @@ builder.Services.AddOpenApi("v1", options =>
 
 builder.Services.AddHostedService<DummyDataService>();
 builder.Services.AddSingleton<MqttService>();
-builder.Services.AddHostedService<MqttBackgroundService>();
+//builder.Services.AddHostedService<MqttBackgroundService>();
 
 builder.Services.AddCors(options => 
 {
