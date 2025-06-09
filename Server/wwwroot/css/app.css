@@ -1,18 +1,56 @@
-﻿/*.sidebar {
-    width: 60px !important;
-    height: 100vh !important;
-    position: fixed !important;
+﻿.cs-toast {
+    display: none;
+    padding: .5rem;
+    color: #fff;
+    z-index: 999;
+    position: absolute;
+    width: 25rem;
+    top: 2rem;
+    border-radius: 1rem;
+    right: 2rem;
 }
 
-    .sidebar .nav-link {
-        padding: 1rem 0 !important;
-        text-align: center !important;
+.cs-toast-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 1000;
+}
+
+.cs-toast-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 1rem;
+    font-size: 2.5rem;
+}
+
+.cs-toast-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding-left: 1rem;
+}
+
+    .cs-toast-body p {
+        margin-bottom: 0;
     }
 
-.content {
-    margin-left: 60px !important;
-    padding: 2rem !important;
-}*/
+.cs-toast-visible {
+    display: flex;
+    flex-direction: row;
+    animation: fadein 1.5s;
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
 .hover-grow {
     transition: transform 0.2s ease-in-out;
 }

@@ -1,12 +1,11 @@
 ﻿@page "/device-group-types"
-@using Server.DTOs.DeviceSensor
-@using Server.Data.Models
-@using Server.Repositories
+
 @inject IDeviceGroupTypeRepository _repo;
 
 <PageTitle>Device Group Types</PageTitle>
-<div class="btn btn-primary">New Type</div>
-<!-- Table -->
+
+<div class="btn btn-primary" @onclick="CreateNew">New Type</div>
+
 <table class="table table-hover mt-3">
     <thead>
         <tr>
@@ -32,83 +31,209 @@
     </tbody>
 </table>
 
-<!-- Offcanvas Panel -->
-<div class="offcanvas offcanvas-end show "data-bs-backdrop="false" tabindex="-1" id="detailsBlade" aria-labelledby="offcanvasLabel" style="visibility:@(selectedItem != null ? "visible" : "hidden"); display:@(selectedItem != null ? "block" : "none");">
+@if (selectedItem != null)
+{
+    <div class="offcanvas-backdrop fade show"
+    style="position: fixed; inset: 0; z-index: 1040;"
+    @onclick="HideDetails">
+    </div>
+}
+
+<div class="offcanvas offcanvas-end show"
+tabindex="-1"
+id="detailsBlade"
+aria-labelledby="offcanvasLabel"
+style="
+        visibility:@(selectedItem != null ? "visible" : "hidden");
+        display:@(selectedItem != null ? "block" : "none");
+        overflow-y: auto;
+        max-height: 100vh;
+        z-index: 1045;">
+
     <div class="offcanvas-header">
-        <h4 class="offcanvas-title" id="offcanvasLabel">Details</h4>
+        <h4 class="offcanvas-title" id="offcanvasLabel">
+            @((selectedItem?.GroupTypeID == 0) ? "New Device Group Type" : "Edit Device Group Type")
+        </h4>
         <button type="button" class="btn-close" aria-label="Close" @onclick="HideDetails"></button>
     </div>
+
     <div class="offcanvas-body">
         @if (selectedItem != null)
         {
-            <dl class="row">
-                <dt class="col-sm-4">ID</dt>
-                <dd class="col-sm-8">@selectedItem.GroupTypeID</dd>
+            <EditForm Model="@selectedItem" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-                <dt class="col-sm-4">Name</dt>
-                <dd class="col-sm-8"><InputText class="form-control" @bind-Value="@selectedItem.Name"/></dd>
-
-                <dt class="col-sm-4">Status</dt>
-                <dd class="col-sm-8">
-                    @if (selectedItem.DeactivatedOn == null)
-                    {
-                        <div class="btn btn-sm btn-success" @onclick="()=>{selectedItem.DeactivatedOn = DateTime.UtcNow;}">Active</div>
-                        
-                    }
-                    else
-                    {
-                         <div class="btn btn-sm btn-danger" @onclick="()=>{selectedItem.DeactivatedOn = null;}">Inactive</div>
-                    }
-                </dd>
-            </dl>
-            <hr/>
-            <p class="text-center fw-bold">Description</p>
-            <InputTextArea class="form-control" style="height:100px;" @bind-Value="@selectedItem.Description"/>
-
-            <hr/>
-            if (selectedItem.Metadata != null && selectedItem.Metadata.Any())
-            {
                 <dl class="row">
+                    <dt class="col-sm-4">ID</dt>
+                    <dd class="col-sm-8">@selectedItem.GroupTypeID</dd>
 
+                    <dt class="col-sm-4">Name</dt>
+                    <dd class="col-sm-8">
+                        <InputText class="form-control" @bind-Value="selectedItem.Name" />
+                        <ValidationMessage For="@(() => selectedItem.Name)" />
+                    </dd>
+                    @if (!isNew)
+                {
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        @if (selectedItem.DeactivatedOn == null)
+                        {
+                            <button type="button" class="btn btn-sm btn-success" @onclick="() => {selectedItem.DeactivatedOn = DateTime.UtcNow;}">Active</button>
+                    }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => {selectedItem.DeactivatedOn = null;}">Inactive</button>
+                            }
+                        </dd>
+                    }
                 </dl>
-            }
-            <div class="text-center">
-                 <div class="btn btn-sm btn-secondary">New</div>
-            </div>
-            <hr/>
-            <div class="btn w-100 btn-sm btn-warning">Sace Changes</div>
+
+                <hr />
+
+                <p class="text-center fw-bold">Description</p>
+                <InputTextArea class="form-control" style="height:100px;" @bind-Value="selectedItem.Description" />
+                <ValidationMessage For="@(() => selectedItem.Description)" />
+
+                <hr />
+                <p class="text-center fw-bold">Metadata</p>
+                @if (selectedItem.Metadata != null && selectedItem.Metadata.Any())
+                {
+                    <dl class="row">
+                        @foreach (var md in selectedItem.Metadata)
+                        {
+                            <dt class="col-md-3">
+                                <InputText class="form-control" @bind-Value="md.Key" />
+                            </dt>
+                            <dd class="col-md-9">
+                                <div class="position-relative">
+                                    <InputText class="form-control pe-5" @bind-Value="md.Value" />
+                                    <div type="button" class="btn btn-sm btn-danger badge position-absolute top-50 end-0 me-2 mt-0 translate-middle-y" title="Remove" @onclick="() => {selectedItem.Metadata.Remove(md);}">
+                                        ×
+                                    </div>
+                                </div>
+                            </dd>
+                        }
+                    </dl>
+                }
+                <div class="text-center">
+                    <button type="button" class="btn btn-sm btn-secondary" @onclick="AddMetaData">New</button>
+                </div>
+
+                <hr />
+
+                <button type="submit" class="btn btn-warning w-100 btn-sm">Save Changes</button>
+            </EditForm>
         }
     </div>
 </div>
 
 @code {
+
     private List<DeviceGroupType>? deviceGroupTypes = new();
-    private DeviceGroupType? selectedItem;
-    private CreateDeviceGroupTypeDTO create = new();
+    private EditableDeviceGroupType? selectedItem;
+    private bool isNew = false;
+
     protected override async Task OnInitializedAsync()
     {
-        var result = await _repo.GetAll();
+        var result = await GetAll();
         if (result.Success)
         {
             deviceGroupTypes = result.Data;
         }
     }
 
+    private async Task<RepositoryResponse<List<DeviceGroupType>>> GetAll()
+    {
+        try
+        {
+            return await _repo.GetAll();
+        }
+        catch (Exception e)
+        {
+            _toast.ShowToast($"Failed to load resources", ToastLevel.Error);
+            return new RepositoryResponse<List<DeviceGroupType>> { Success = false, Data = null, Exception = e };
+        }
+    }
+
     private void ShowDetails(DeviceGroupType dgt)
     {
-        selectedItem = new DeviceGroupType
-        {
-            GroupTypeID = dgt.GroupTypeID,
-            Name = dgt.Name,
-            Description = dgt.Description,
-            CreatedOn = dgt.CreatedOn,
-            DeactivatedOn = dgt.DeactivatedOn,
-            Metadata = dgt.Metadata
-        } ;
+        selectedItem = new EditableDeviceGroupType(dgt);
+
+        isNew = false;
+    }
+
+    private void CreateNew()
+    {
+        selectedItem = new EditableDeviceGroupType(new DeviceGroupType
+            {
+                GroupTypeID = 0,
+                Name = string.Empty,
+                Description = string.Empty,
+                CreatedOn = DateTime.UtcNow
+            });
+        isNew = true;
     }
 
     private void HideDetails()
     {
         selectedItem = null;
+    }
+
+    private void AddMetaData()
+    {
+        if (selectedItem != null)
+        {
+            if (selectedItem.Metadata == null)
+                selectedItem.Metadata = new();
+
+            selectedItem.Metadata.Add(new Entry { Key = "Key", Value = "Value" });
+        }
+    }
+
+
+    private async Task HandleValidSubmit()
+    {
+        if (selectedItem == null) return;
+
+        try
+        {
+            RepositoryResponse<DeviceGroupType> result;
+
+            if (isNew)
+            {
+                result = await _repo.Create(selectedItem.GetDatabaseModel());
+            }
+            else
+            {
+                var dbModel = deviceGroupTypes.FirstOrDefault(x=>x.GroupTypeID == selectedItem.GroupTypeID);
+
+                dbModel.Name = selectedItem.Name;
+                dbModel.Description = selectedItem.Description;
+                dbModel.CreatedOn = selectedItem.CreatedOn;
+                dbModel.Metadata = selectedItem.Metadata;
+                dbModel.DeactivatedOn = selectedItem.DeactivatedOn;
+
+                result = await _repo.Update(dbModel);
+            }
+
+            if (result.Success)
+            {
+                var allResult = await GetAll();
+                if (allResult.Success)
+                {
+                    deviceGroupTypes = allResult.Data;
+                    HideDetails();
+                }
+            }
+            else
+            {
+                _toast.ShowToast("Failed to save changes.", ToastLevel.Error);
+            }
+        }
+        catch (Exception)
+        {
+            _toast.ShowToast("Failed to save changes.", ToastLevel.Error);
+        }
     }
 }

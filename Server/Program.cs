@@ -24,6 +24,7 @@ builder.Services.AddOpenApi("v1", options =>
 
 builder.Services.AddHostedService<DummyDataService>();
 builder.Services.AddSingleton<MqttService>();
+builder.Services.AddScoped<ToastService>();
 //builder.Services.AddHostedService<MqttBackgroundService>();
 
 builder.Services.AddCors(options => 
@@ -69,9 +70,7 @@ app.MapOtaManifestEndpoints();
 app.MapOtaOverridesEndpoints();
 app.MapOtaDownloadEndpoints();
 
-
 app.UseStaticFiles();
-app.MapStaticAssets();
 
 app.MapRazorComponents<App>()
 	.AddInteractiveServerRenderMode();
