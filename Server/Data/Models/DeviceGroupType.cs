@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 using Server.DTOs.DeviceSensor;
+using Server.Attributes;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Server.Data.Models
 {
@@ -36,10 +38,12 @@ namespace Server.Data.Models
 		public long GroupTypeID { get; set; }
 		[Description("The name of the device group type.")]
 		[MaxLength(100)]
-		public string Name { get; set; } = string.Empty;
+        [TableColumn("Name", 1)]
+        public string Name { get; set; } = string.Empty;
 		[Description("The optional description of the device group type.")]
 		[MaxLength(500)]
-		public string? Description { get; set; }
+        [TableColumn("Description", 2)]
+        public string? Description { get; set; }
 		[Description("Metadata associated with this group type.")]
 		public List<Entry>? Metadata { get; set; }
 		[Description("When this group type was created.")]
@@ -48,5 +52,16 @@ namespace Server.Data.Models
 		public DateTime? DeactivatedOn { get; set; }
 		[JsonIgnore]
 		public ICollection<DeviceGroup>? DeviceGroups { get; set; }
-	}
+
+        [NotMapped]
+        [JsonIgnore]
+        [TableColumn("Status", 3, FalseLabel = "Inactive", TrueLabel = "Active")]
+        public bool IsActive
+        {
+            get
+            {
+                return DeactivatedOn == null;
+            }
+        }
+    }
 }

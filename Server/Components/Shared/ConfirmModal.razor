@@ -1,0 +1,58 @@
+﻿@typeparam T
+
+@if (_visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">@Title</h5>
+                    <button type="button" class="btn-close" @onclick="Hide" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>@Message</p>
+                </div>
+                <div class="modal-footer">
+                    <div class="btn btn-danger w-100 btn-sm" @onclick="Confirm">@ConfirmText</div>
+                    <div class="btn btn-secondary w-100 btn-sm" @onclick="Hide">@CancelText</div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _visible;
+    private T? _item;
+
+    [Parameter] public string Title { get; set; } = "Confirm";
+    [Parameter] public string Message { get; set; } = "Are you sure?";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+
+    [Parameter] public EventCallback<T?> OnConfirmed { get; set; }
+
+    public void Show(T item)
+    {
+        _item = item;
+        _visible = true;
+    }
+
+    public void Hide()
+    {
+        _visible = false;
+        _item = default;
+    }
+
+    public void Toggle(T item)
+    {
+        _item = item;
+        _visible = !_visible;
+    }
+
+    private async Task Confirm()
+    {
+        await OnConfirmed.InvokeAsync(_item);
+        Hide();
+    }
+}

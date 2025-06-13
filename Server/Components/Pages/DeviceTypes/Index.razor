@@ -1,67 +1,59 @@
-﻿@page "/device-group-types"
+﻿@page "/device-types"
 @using Server.Components.Shared
+@using Server.Attributes
 
-@inject IDeviceGroupTypeRepository _repo;
+@inject IDeviceTypeRepository _repo;
 
-<PageTitle>Device Group Types</PageTitle>
+<PageTitle>Device Types</PageTitle>
 
-<Table TItem="DeviceGroupType"
-       Items="deviceGroupTypes"
-       EnableDelete="true"
-       EnableAdd="true"
-       AddText="New Type"
-       OnAdd="CreateNew"
-       OnDelete="DeleteItem"
-       RowClicked="ShowDetails" />
+<Table TItem="DeviceType"
+Items="deviceTypes"
+EnableDelete="true"
+EnableAdd="true"
+AddText="New Type"
+OnAdd="CreateNew"
+OnDelete="DeleteItem"
+RowClicked="ShowDetails" />
+
 @if (selectedItem != null)
 {
-    <div class="offcanvas-backdrop fade show"
-    style="position: fixed; inset: 0; z-index: 1040;"
-    @onclick="HideDetails">
-    </div>
-}
+    <div class="offcanvas-backdrop fade show" style="position: fixed; inset: 0; z-index: 1040;" @onclick="HideDetails"></div>
 
-<div class="offcanvas offcanvas-end show"
-tabindex="-1"
-id="detailsBlade"
-aria-labelledby="offcanvasLabel"
-style="
-        visibility:@(selectedItem != null ? "visible" : "hidden");
-        display:@(selectedItem != null ? "block" : "none");
-        overflow-y: auto;
-        max-height: 100vh;
-        z-index: 1045;">
-
-    <div class="offcanvas-header">
-        <h4 class="offcanvas-title" id="offcanvasLabel">
-            @((isNew) ? "New Device Group Type" : "Edit Device Group Type")
-        </h4>
-        <button type="button" class="btn-close" aria-label="Close" @onclick="HideDetails"></button>
-    </div>
-
-    <div class="offcanvas-body">
-        @if (selectedItem != null)
-        {
+    <div class="offcanvas offcanvas-end show" tabindex="-1" id="detailsBlade" aria-labelledby="offcanvasLabel"
+    style="visibility:visible; display:block; overflow-y:auto; max-height: 100vh; z-index: 1045;">
+        <div class="offcanvas-header">
+            <h4 class="offcanvas-title" id="offcanvasLabel">@((isNew) ? "New Device Type" : "Edit Device Type")</h4>
+            <button type="button" class="btn-close" aria-label="Close" @onclick="HideDetails"></button>
+        </div>
+        <div class="offcanvas-body">
             <EditForm Model="@selectedItem" OnValidSubmit="HandleValidSubmit">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
                 <dl class="row">
                     <dt class="col-sm-4">ID</dt>
-                    <dd class="col-sm-8">@selectedItem.GroupTypeID</dd>
-
+                    @if (isNew)
+                    {
+                        <dd class="col-sm-8">
+                            <InputText class="form-control" @bind-Value="@selectedItem.DeviceTypeID" />
+                        </dd>
+                    }
+                    else
+                    {
+                        <dd class="col-sm-8">@selectedItem.DeviceTypeID</dd>
+                    }
                     <dt class="col-sm-4">Name</dt>
                     <dd class="col-sm-8">
                         <InputText class="form-control" @bind-Value="selectedItem.Name" />
                     </dd>
                     @if (!isNew)
-                {
-                    <dt class="col-sm-4">Status</dt>
-                    <dd class="col-sm-8">
-                        @if (selectedItem.DeactivatedOn == null)
-                        {
-                            <button type="button" class="btn btn-sm btn-success" @onclick="() => {selectedItem.DeactivatedOn = DateTime.UtcNow;}">Active</button>
-                    }
+                    {
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            @if (selectedItem.DeactivatedOn == null)
+                            {
+                                <button type="button" class="btn btn-sm btn-success" @onclick="() => {selectedItem.DeactivatedOn = DateTime.UtcNow;}">Active</button>
+                            }
                             else
                             {
                                 <button type="button" class="btn btn-sm btn-danger" @onclick="() => {selectedItem.DeactivatedOn = null;}">Inactive</button>
@@ -76,6 +68,7 @@ style="
                 <InputTextArea class="form-control" style="height:150px;" @bind-Value="selectedItem.Description" />
 
                 <hr />
+
                 <p class="text-center fw-bold">Metadata Properties</p>
                 @if (selectedItem.Metadata != null && selectedItem.Metadata.Any())
                 {
@@ -104,86 +97,111 @@ style="
 
                 <button type="submit" class="btn btn-warning w-100 btn-sm">Save Changes</button>
             </EditForm>
-        }
+        </div>
     </div>
-</div>
+}
 
 @code {
-    public class EditableDeviceGroupType
+    public class EditableDeviceType
     {
-        public EditableDeviceGroupType()
+        public EditableDeviceType()
         {
-
         }
-        public EditableDeviceGroupType(DeviceGroupType dg)
+
+        public EditableDeviceType(DeviceType dg)
         {
-            GroupTypeID = dg.GroupTypeID;
+            DeviceTypeID = dg.DeviceTypeID;
             Name = dg.Name;
             Description = dg.Description;
             CreatedOn = dg.CreatedOn;
             DeactivatedOn = dg.DeactivatedOn;
-            Metadata = dg.Metadata;
+            Metadata = dg.Metadata != null ? new List<Entry>(dg.Metadata) : new List<Entry>();
         }
 
-        public long GroupTypeID { get; set; }
-        [StringLength(100,MinimumLength =3 )]
+        [StringLength(200, MinimumLength = 3)]
+        public string DeviceTypeID { get; set; } = string.Empty;
+
+        [StringLength(100, MinimumLength = 3)]
         public string Name { get; set; } = string.Empty;
+
         [StringLength(500, MinimumLength = 3)]
         public string? Description { get; set; }
-        public List<Entry>? Metadata { get; set; }
+
+        public List<Entry>? Metadata { get; set; } = new();
+
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+
         public DateTime? DeactivatedOn { get; set; }
 
-        public DeviceGroupType GetDatabaseModel()
+        public DeviceType GetDatabaseModel()
         {
-            return new DeviceGroupType
-                {
-                    GroupTypeID = this.GroupTypeID,
-                    Name = this.Name,
-                    Description = this.Description,
-                    CreatedOn = this.CreatedOn,
-                    DeactivatedOn = this.DeactivatedOn,
-                    Metadata = this.Metadata
-                };
-        }
-    }
-    private List<DeviceGroupType>? deviceGroupTypes = new();
-    private EditableDeviceGroupType? selectedItem;
-    private bool isNew = false;
-    protected override async Task OnInitializedAsync()
-    {
-        var result = await Load();
-        if (result.Success)
-        {
-            deviceGroupTypes = result.Data;
+            return new DeviceType
+            {
+                DeviceTypeID = this.DeviceTypeID,
+                Name = this.Name,
+                Description = this.Description,
+                CreatedOn = this.CreatedOn,
+                DeactivatedOn = this.DeactivatedOn,
+                Metadata = this.Metadata
+            };
         }
     }
 
-    private async Task<RepositoryResponse<List<DeviceGroupType>>> Load()
+    private List<DeviceType>? deviceTypes;
+    private EditableDeviceType? selectedItem;
+    private bool isNew = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
     {
         try
         {
-            return await _repo.GetAll();
+            var result = await _repo.GetAll();
+            if (result.Success)
+            {
+                deviceTypes = result.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                _toast.ShowToast("Failed to load resources.", ToastLevel.Error);
+            }
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            _toast.ShowToast($"Failed to load resources", ToastLevel.Error);
-            return new RepositoryResponse<List<DeviceGroupType>> { Success = false, Data = null, Exception = e };
+            _toast.ShowToast("Failed to load resources.", ToastLevel.Error);
         }
     }
-    private void ShowDetails(DeviceGroupType dgt)
-    {
-        selectedItem = new EditableDeviceGroupType(dgt);
 
+    private void ShowDetails(DeviceType item)
+    {
+        selectedItem = new EditableDeviceType(item);
         isNew = false;
     }
-    private async Task DeleteItem(DeviceGroupType item)
+
+    private void CreateNew()
+    {
+        selectedItem = new EditableDeviceType(new DeviceType
+        {
+            DeviceTypeID = string.Empty,
+            Name = string.Empty,
+            Description = string.Empty,
+            CreatedOn = DateTime.UtcNow
+        });
+        isNew = true;
+    }
+
+    private async Task DeleteItem(DeviceType item)
     {
         if (item == null) return;
 
         try
         {
-            var result = await _repo.Delete(item.GroupTypeID);
+            var result = await _repo.Delete(item.DeviceTypeID);
             if (result.Success)
             {
                 await Load();
@@ -198,17 +216,6 @@ style="
             _toast.ShowToast("Failed to delete resource.", ToastLevel.Error);
         }
     }
-    private void CreateNew()
-    {
-        selectedItem = new EditableDeviceGroupType(new DeviceGroupType
-            {
-                GroupTypeID = 0,
-                Name = string.Empty,
-                Description = string.Empty,
-                CreatedOn = DateTime.UtcNow
-            });
-        isNew = true;
-    }
 
     private void HideDetails()
     {
@@ -217,15 +224,11 @@ style="
 
     private void AddMetaData()
     {
-        if (selectedItem != null)
-        {
-            if (selectedItem.Metadata == null)
-                selectedItem.Metadata = new();
+        if (selectedItem == null) return;
 
-            selectedItem.Metadata.Add(new Entry { Key = "Key", Value = "Value" });
-        }
+        selectedItem.Metadata ??= new List<Entry>();
+        selectedItem.Metadata.Add(new Entry { Key = "Key", Value = "Value" });
     }
-
 
     private async Task HandleValidSubmit()
     {
@@ -233,7 +236,7 @@ style="
 
         try
         {
-            RepositoryResponse<DeviceGroupType> result;
+            RepositoryResponse<DeviceType> result;
 
             if (isNew)
             {
@@ -241,7 +244,7 @@ style="
             }
             else
             {
-                var dbModel = deviceGroupTypes?.FirstOrDefault(x => x.GroupTypeID == selectedItem.GroupTypeID);
+                var dbModel = deviceTypes?.FirstOrDefault(x => x.DeviceTypeID == selectedItem.DeviceTypeID);
 
                 if (dbModel == null)
                 {

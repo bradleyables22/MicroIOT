@@ -36,9 +36,16 @@ namespace Server.Services.Background
 			var moldingGroup = new DeviceGroup { DeviceGroupID = "MOLD-GRP-1", Alias = "Molding Area", SystemGroupID = factorySystem.SystemGroupID, GroupTypeID = moldingGroupType.GroupTypeID };
 			_context.DeviceGroups.AddRange(cncGroup, moldingGroup);
 
-			var cncLathe = new Device { DeviceID = "CNC-001", Alias = "CNC Lathe", DeviceGroupID = cncGroup.DeviceGroupID };
-			var injectionMolder = new Device { DeviceID = "MOLD-001", Alias = "Injection Molder", DeviceGroupID = moldingGroup.DeviceGroupID };
+			var cnc = new DeviceType { DeviceTypeID = "CNC Machinery", Name = "CNC Machine" };
+			var mold = new DeviceType { DeviceTypeID = "Moldering", Name = "Molder" };
+			_context.DeviceTypes.AddRange(cnc, mold);
+
+            var cncLathe = new Device { DeviceID = "CNC-001", Alias = "CNC Lathe", DeviceGroupID = cncGroup.DeviceGroupID , DeviceTypeID = cnc.DeviceTypeID};
+			var injectionMolder = new Device { DeviceID = "MOLD-001", Alias = "Injection Molder", DeviceGroupID = moldingGroup.DeviceGroupID, DeviceTypeID = mold.DeviceTypeID };
 			_context.Devices.AddRange(cncLathe, injectionMolder);
+
+			var env = new SensorCategory { SensorCategoryID = 0, Name = "Enviromental" };
+			_context.SensorCategories.AddRange(env);
 
 			var tempType = new SensorType { SensorTypeID = "TEMP", Name = "Temperature Sensor" };
 			var vibType = new SensorType { SensorTypeID = "VIB", Name = "Vibration Sensor" };
@@ -48,8 +55,8 @@ namespace Server.Services.Background
 			var vibReadingType = new ReadingType { ReadingTypeID = "VIB", Name = "Vibration", Units = "mm/s" };
 			_context.ReadingTypes.AddRange(tempReadingType, vibReadingType);
 
-			var latheTempSensor = new DeviceSensor { SensorID = "TEMP-CNC-1", DeviceID = cncLathe.DeviceID, SensorTypeID = tempType.SensorTypeID };
-			var molderVibSensor = new DeviceSensor { SensorID = "VIB-MOLD-1", DeviceID = injectionMolder.DeviceID, SensorTypeID = vibType.SensorTypeID };
+			var latheTempSensor = new DeviceSensor { SensorID = "TEMP", DeviceID = cncLathe.DeviceID, SensorTypeID = tempType.SensorTypeID, SensorCategoryID = env.SensorCategoryID };
+			var molderVibSensor = new DeviceSensor { SensorID = "VIB", DeviceID = injectionMolder.DeviceID, SensorTypeID = vibType.SensorTypeID, SensorCategoryID = env.SensorCategoryID };
 			_context.DeviceSensors.AddRange(latheTempSensor, molderVibSensor);
 
 			_context.SensorReadings.AddRange(new[]
@@ -71,19 +78,25 @@ namespace Server.Services.Background
 			var trailerGroupType = new DeviceGroupType { GroupTypeID = 3, Name = "Dry Van Trailer" };
 			_context.DeviceGroupTypes.Add(trailerGroupType);
 
-			var trailerGroup = new DeviceGroup { DeviceGroupID = "TRAILER-GRP-1", Alias = "Dry Vans", SystemGroupID = fleetSystem.SystemGroupID, GroupTypeID = trailerGroupType.GroupTypeID };
+            var gps = new DeviceType { DeviceTypeID = "GPS", Name = "Gps Device" };
+            _context.DeviceTypes.AddRange(cnc, mold);
+
+            var loc = new SensorCategory { SensorCategoryID = 0, Name = "Location" };
+            _context.SensorCategories.AddRange(loc);
+
+            var trailerGroup = new DeviceGroup { DeviceGroupID = "TRAILER-001", Alias = "Dry Van", SystemGroupID = fleetSystem.SystemGroupID, GroupTypeID = trailerGroupType.GroupTypeID };
 			_context.DeviceGroups.Add(trailerGroup);
 
-			var trailer1 = new Device { DeviceID = "TRAILER-001", Alias = "Trailer 001", DeviceGroupID = trailerGroup.DeviceGroupID };
+			var trailer1 = new Device { DeviceID = "TRAILER-001-GPS", Alias = "Trailer 001 GPS", DeviceGroupID = trailerGroup.DeviceGroupID, DeviceTypeID= gps.DeviceTypeID };
 			_context.Devices.Add(trailer1);
 
-			var gpsType = new SensorType { SensorTypeID = "GPS", Name = "GPS Tracker" };
+			var gpsType = new SensorType { SensorTypeID = "NEO-M8N", Name = "NEO-M8N GPS Module" };
 			_context.SensorTypes.Add(gpsType);
 
-			var gpsReadingType = new ReadingType { ReadingTypeID = "GPS", Name = "GPS Location", Units = "LatLng" };
+			var gpsReadingType = new ReadingType { ReadingTypeID = "GPS", Name = "GPS Location", Units = "Degrees" };
 			_context.ReadingTypes.Add(gpsReadingType);
 
-			var gpsSensor = new DeviceSensor { SensorID = "GPS-TRAILER-001", DeviceID = trailer1.DeviceID, SensorTypeID = gpsType.SensorTypeID };
+			var gpsSensor = new DeviceSensor { SensorID = "GPS-TRAILER-001", DeviceID = trailer1.DeviceID, SensorTypeID = gpsType.SensorTypeID, SensorCategoryID = loc.SensorCategoryID };
 			_context.DeviceSensors.Add(gpsSensor);
 
 			_context.SensorReadings.Add(new SensorReading
