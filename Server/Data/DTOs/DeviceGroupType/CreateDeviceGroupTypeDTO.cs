@@ -7,10 +7,10 @@ namespace Server.DTOs.DeviceSensor
 	public class CreateDeviceGroupTypeDTO
 	{
 		[Description("The name of the device group type.")]
-		[MaxLength(100)]
+		[StringLength(100, MinimumLength = 1)]
 		public string Name { get; set; } = string.Empty;
 		[Description("The optional description of the device group type.")]
-		[MaxLength(500)]
+		[StringLength(500, MinimumLength = 1)]
 		public string? Description { get; set; }
 		[Description("Metadata associated with this group type.")]
 		public List<Entry>? Metadata { get; set; }

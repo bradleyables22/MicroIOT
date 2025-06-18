@@ -9,10 +9,10 @@ namespace Server.DTOs.SystemGroup
 		[Description("The ID of the system group.")]
 		public long SystemGroupID { get; set; }
 		[Description("The name of the system group.")]
-		[MaxLength(100)]
-		public string Name { get; set; } = string.Empty;
+        [StringLength(100, MinimumLength = 1)]
+        public string Name { get; set; } = string.Empty;
 		[Description("A short description of the systemgroup.")]
-		[MaxLength(500)]
+		[StringLength(500, MinimumLength = 1)]
 		public string Description { get; set; } = string.Empty;
 		[Description("User defined metadata related to this system group.")]
 		public List<Entry>? Metadata { get; set; }

@@ -10,13 +10,13 @@ namespace Server.DTOs.ReadingType
 		[Description("The reading type ID.")]
 		public string ReadingTypeID { get; set; } = Guid.CreateVersion7().ToString("N");
 		[Description("The name of the reading type.")]
-		[MaxLength(100)]
+		[StringLength(100, MinimumLength = 1)]
 		public string Name { get; set; } = string.Empty;
 		[Description("The optional description of the reading type.")]
-		[MaxLength(500)]
+		[StringLength(500, MinimumLength = 1)]
 		public string? Description { get; set; }
 		[Description("The unit of measurement, if applicable.")]
-		[MaxLength(100)]
+		[StringLength(100, MinimumLength = 1)]
 		public string? Units { get; set; }
 		[Description("Metadata associated with this reading type.")]
 		public List<Entry>? Metadata { get; set; }

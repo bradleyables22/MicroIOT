@@ -1,0 +1,274 @@
+﻿@page "/sensor-types"
+@using Server.Components.Shared
+@using Server.Attributes
+
+@inject ISensorTypeRepository _repo;
+
+<PageTitle>Sensor Types</PageTitle>
+
+<Table TItem="SensorType"
+       Items="sensorTypes"
+       EnableDelete="true"
+       EnableAdd="true"
+       AddText="New Type"
+       OnAdd="CreateNew"
+       OnDelete="DeleteItem"
+       RowClicked="ShowDetails" />
+
+@if (selectedItem != null)
+{
+    <div class="offcanvas-backdrop fade show" style="position: fixed; inset: 0; z-index: 1040;" @onclick="HideDetails"></div>
+
+    <div class="offcanvas offcanvas-end show" tabindex="-1" id="detailsBlade" aria-labelledby="offcanvasLabel"
+         style="visibility:visible; display:block; overflow-y:auto; max-height: 100vh; z-index: 1045;">
+        <div class="offcanvas-header">
+            <h4 class="offcanvas-title" id="offcanvasLabel">@((isNew) ? "New Sensor Type" : "Edit Sensor Type")</h4>
+            <button type="button" class="btn-close" aria-label="Close" @onclick="HideDetails"></button>
+        </div>
+        <div class="offcanvas-body">
+            <EditForm Model="@selectedItem" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <dl class="row">
+                    <dt class="col-sm-4">ID</dt>
+                    @if (isNew)
+                    {
+                        <dd class="col-sm-8">
+                            <InputText class="form-control" @bind-Value="@selectedItem.SensorTypeID" />
+                        </dd>
+                    }
+                    else
+                    {
+                        <dd class="col-sm-8">@selectedItem.SensorTypeID</dd>
+                    }
+                    <dt class="col-sm-4">Name</dt>
+                    <dd class="col-sm-8">
+                        <InputText class="form-control" @bind-Value="selectedItem.Name" />
+                    </dd>
+                    @if (!isNew)
+                    {
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            @if (selectedItem.DeactivatedOn == null)
+                            {
+                                <button type="button" class="btn btn-sm btn-success" @onclick="() => {selectedItem.DeactivatedOn = DateTime.UtcNow;}">Active</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => {selectedItem.DeactivatedOn = null;}">Inactive</button>
+                            }
+                        </dd>
+                    }
+                </dl>
+
+                <hr />
+
+                <p class="text-center fw-bold">Description</p>
+                <InputTextArea class="form-control" style="height:150px;" @bind-Value="selectedItem.Description" />
+
+                <hr />
+
+                <p class="text-center fw-bold">Metadata Properties</p>
+                @if (selectedItem.Metadata != null && selectedItem.Metadata.Any())
+                {
+                    <dl class="row">
+                        @foreach (var md in selectedItem.Metadata)
+                        {
+                            <dt class="col-md-3">
+                                <InputText class="form-control" @bind-Value="md.Key" />
+                            </dt>
+                            <dd class="col-md-9">
+                                <div class="position-relative">
+                                    <InputText class="form-control pe-5" @bind-Value="md.Value" />
+                                    <div type="button" class="btn btn-sm btn-danger badge position-absolute top-50 end-0 me-2 mt-0 translate-middle-y" title="Remove" @onclick="() => {selectedItem.Metadata.Remove(md);}">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </div>
+                                </div>
+                            </dd>
+                        }
+                    </dl>
+                }
+                <div class="text-center">
+                    <button type="button" class="btn btn-sm btn-secondary" @onclick="AddMetaData">New</button>
+                </div>
+
+                <hr />
+
+                <button type="submit" class="btn btn-warning w-100 btn-sm">Save Changes</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    public class EditableSensorType
+    {
+        public EditableSensorType()
+        {
+        }
+
+        public EditableSensorType(SensorType st)
+        {
+            SensorTypeID = st.SensorTypeID;
+            Name = st.Name;
+            Description = st.Description;
+            CreatedOn = st.CreatedOn;
+            DeactivatedOn = st.DeactivatedOn;
+            Metadata = st.Metadata != null ? new List<Entry>(st.Metadata) : new List<Entry>();
+        }
+
+        [Key]
+        public string SensorTypeID { get; set; } = Guid.CreateVersion7().ToString();
+        [MaxLength(100)]
+        public string Name { get; set; } = string.Empty;
+        [MaxLength(500)]
+        public string? Description { get; set; }
+        public List<Entry>? Metadata { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        public DateTime? DeactivatedOn { get; set; }
+
+        public SensorType GetDatabaseModel()
+        {
+            return new SensorType
+                {
+                    SensorTypeID = this.SensorTypeID,
+                    Name = this.Name,
+                    Description = this.Description,
+                    CreatedOn = this.CreatedOn,
+                    DeactivatedOn = this.DeactivatedOn,
+                    Metadata = this.Metadata
+                };
+        }
+    }
+
+    private List<SensorType>? sensorTypes;
+    private EditableSensorType? selectedItem;
+    private bool isNew = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            var result = await _repo.GetAll();
+            if (result.Success)
+            {
+                sensorTypes = result.Data;
+                StateHasChanged();
+            }
+            else
+            {
+                _toast.ShowToast("Failed to load resources.", ToastLevel.Error);
+            }
+        }
+        catch (Exception)
+        {
+            _toast.ShowToast("Failed to load resources.", ToastLevel.Error);
+        }
+    }
+
+    private void ShowDetails(SensorType item)
+    {
+        selectedItem = new EditableSensorType(item);
+        isNew = false;
+    }
+
+    private void CreateNew()
+    {
+        selectedItem = new EditableSensorType(new SensorType
+            {
+                SensorTypeID = string.Empty,
+                Name = string.Empty,
+                Description = string.Empty,
+                CreatedOn = DateTime.UtcNow
+            });
+        isNew = true;
+    }
+
+    private async Task DeleteItem(SensorType item)
+    {
+        if (item == null) return;
+
+        try
+        {
+            var result = await _repo.Delete(item.SensorTypeID);
+            if (result.Success)
+            {
+                await Load();
+            }
+            else
+            {
+                _toast.ShowToast("Failed to delete resource.", ToastLevel.Error);
+            }
+        }
+        catch (Exception)
+        {
+            _toast.ShowToast("Failed to delete resource.", ToastLevel.Error);
+        }
+    }
+
+    private void HideDetails()
+    {
+        selectedItem = null;
+    }
+
+    private void AddMetaData()
+    {
+        if (selectedItem == null) return;
+
+        selectedItem.Metadata ??= new List<Entry>();
+        selectedItem.Metadata.Add(new Entry { Key = "Key", Value = "Value" });
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (selectedItem == null) return;
+
+        try
+        {
+            RepositoryResponse<SensorType> result;
+
+            if (isNew)
+            {
+                result = await _repo.Create(selectedItem.GetDatabaseModel());
+            }
+            else
+            {
+                var dbModel = sensorTypes?.FirstOrDefault(x => x.SensorTypeID == selectedItem.SensorTypeID);
+
+                if (dbModel == null)
+                {
+                    _toast.ShowToast("Resource not found.", ToastLevel.Error);
+                    return;
+                }
+
+                dbModel.Name = selectedItem.Name;
+                dbModel.Description = selectedItem.Description;
+                dbModel.CreatedOn = selectedItem.CreatedOn;
+                dbModel.Metadata = selectedItem.Metadata;
+                dbModel.DeactivatedOn = selectedItem.DeactivatedOn;
+
+                result = await _repo.Update(dbModel);
+            }
+
+            if (result.Success)
+            {
+                await Load();
+                HideDetails();
+            }
+            else
+            {
+                _toast.ShowToast("Failed to save changes.", ToastLevel.Error);
+            }
+        }
+        catch (Exception)
+        {
+            _toast.ShowToast("Failed to save changes.", ToastLevel.Error);
+        }
+    }
+}

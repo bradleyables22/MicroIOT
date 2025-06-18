@@ -11,7 +11,7 @@ namespace Server.DTOs.DeviceGroup
 		[Description("The device group ID.")]
 		public string DeviceGroupID { get; set; } = Guid.CreateVersion7().ToString("N");
 		[Description("The given alias of this device group.")]
-		[MaxLength(100)]
+		[StringLength(100, MinimumLength = 1)]
 		public string Alias { get; set; } = string.Empty;
 		[Description("The system group this device belongs to.")]
 		public long? SystemGroupID { get; set; }

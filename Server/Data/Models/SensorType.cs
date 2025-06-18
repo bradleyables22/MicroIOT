@@ -1,6 +1,8 @@
-﻿using Server.DTOs.SensorType;
+﻿using Server.Attributes;
+using Server.DTOs.SensorType;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Server.Data.Models
@@ -36,10 +38,12 @@ namespace Server.Data.Models
 		public string SensorTypeID { get; set; } = Guid.CreateVersion7().ToString();
 		[Description("The the name of the sensor type.")]
 		[MaxLength(100)]
-		public string Name { get; set; } = string.Empty;
+        [TableColumn("Name", 1)]
+        public string Name { get; set; } = string.Empty;
 		[Description("The optional description of the sensor type, if applicable.")]
 		[MaxLength(500)]
-		public string? Description { get; set; }
+        [TableColumn("Description", 2)]
+        public string? Description { get; set; }
 		[Description("Metadata associated with these sensor types.")]
 		public List<Entry>? Metadata { get; set; }
 		[Description("When this sensor type was created.")]
@@ -48,5 +52,16 @@ namespace Server.Data.Models
 		public DateTime? DeactivatedOn { get; set; }
 		[JsonIgnore]
 		public ICollection<DeviceSensor>? DeviceSensors { get; set; }
-	}
+
+        [NotMapped]
+        [JsonIgnore]
+        [TableColumn("Status", 3, FalseLabel = "Inactive", TrueLabel = "Active")]
+        public bool IsActive
+        {
+            get
+            {
+                return DeactivatedOn == null;
+            }
+        }
+    }
 }

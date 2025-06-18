@@ -10,8 +10,8 @@ namespace Server.Data.DTOs.OtaDownload
 		[Description("The Device ID this override applies to, this is not a constraint to the device table.")]
 		public string DeviceID { get; set; } = string.Empty;
 		[Description("The version of the OTA firmware.")]
-		[MaxLength(100)]
-		public string Version { get; set; } = string.Empty;
+        [StringLength(100, MinimumLength = 1)]
+        public string Version { get; set; } = string.Empty;
 		public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
 	}
 }

@@ -34,6 +34,7 @@ namespace Server.Data.Models
 		[MaxLength(100)]
 		public string Version { get; set; }= string.Empty;
 		[Description("Where they can download the firmware from.")]
+		[MaxLength(700)]
 		public string Url { get; set; } = string.Empty;
 		[Description("When the record was created.")]
 		public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
