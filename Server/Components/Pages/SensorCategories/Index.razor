@@ -110,9 +110,9 @@
         }
 
         public long SensorCategoryID { get; set; }
-        [MaxLength(100)]
+        [StringLength(100, MinimumLength = 1)]
         public string Name { get; set; } = string.Empty;
-        [MaxLength(500)]
+        [StringLength(500, MinimumLength = 1)]
         public string? Description { get; set; }
         public List<Entry>? Metadata { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
