@@ -1,0 +1,260 @@
+﻿@inject ISystemGroupRepository _repo
+@if(System is not null)
+{
+    <div class="row" >
+        <div class="col-md-4 mt-2">
+            <div class="card bg-secondary-subtle" style="min-height:150px; max-height:200px;overflow:auto">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="card-title">@System.Name</h5>
+                        </div>
+                        <div class="col-md text-end">
+                            <div class="btn btn-sm btn-warning" @onclick="OpenEditBlade"><i class="bi bi-pen-fill"></i></div>
+                            <div class="btn btn-sm btn-danger" @onclick="ToggleDelete"><i class="bi bi-trash-fill"></i></div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(System.Description))
+                    {
+                        <p class="card-text text-muted">@System.Description</p>
+                    }
+                    @if (System.DeactivatedOn == null)
+                    {
+                        <div class="badge bg-success me-2">Active</div>
+                        <small class="text-muted">Created: @System.CreatedOn.ToLocalTime().ToShortDateString() UTC</small>
+                    }
+                    else
+                    {
+                        <div class="badge bg-danger me-2">Inactive</div>
+                        <small class="text-muted">Deactivated On: @System.DeactivatedOn.Value.ToLocalTime().ToShortDateString() UTC</small>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 mt-2">
+            <div class="card bg-secondary-subtle" style="min-height:150px;max-height:200px; overflow:auto">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h5 class="card-title">Metadata Properties</h5>
+                        </div>
+                        <div class="col-md text-end">
+                            <div class="btn btn-sm btn-warning" @onclick="OpenEditBlade"><i class="bi bi-pen-fill"></i></div>
+                        </div>
+                    </div>
+
+                    @if (System.Metadata is not null && System.Metadata.Any())
+                    {
+                        <div class="row">
+                            @foreach (var entry in System.Metadata)
+                            {
+                                <div class="col-md-4">
+                                    <strong>@entry.Key:</strong> @entry.Value
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    if(editableSystem is not null)
+    {
+        <div class="offcanvas-backdrop fade show" style="position: fixed; inset: 0; z-index: 1040;" @onclick="HideDetails"></div>
+
+        <div class="offcanvas offcanvas-end show" tabindex="-1" id="detailsBlade" aria-labelledby="offcanvasLabel"
+        style="visibility:visible; display:block; overflow-y:auto; max-height: 100vh; z-index: 1045;">
+            <div class="offcanvas-header">
+                <h4 class="offcanvas-title" id="offcanvasLabel">Edit System Group</h4>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="HideDetails"></button>
+            </div>
+            <div class="offcanvas-body">
+                <EditForm Model="@editableSystem" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <dl class="row">
+                        <dt class="col-sm-4">ID</dt>
+                        <dd class="col-sm-8">@editableSystem.SystemGroupID</dd>
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8">
+                            <InputText class="form-control" @bind-Value="editableSystem.Name" />
+                        </dd>
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            @if (editableSystem.DeactivatedOn == null)
+                            {
+                                <button type="button" class="btn btn-sm btn-success" @onclick="() => {editableSystem.DeactivatedOn = DateTime.UtcNow;}">Active</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => {editableSystem.DeactivatedOn = null;}">Inactive</button>
+                            }
+                        </dd>
+                    </dl>
+
+                    <hr />
+
+                    <p class="text-center fw-bold">Description</p>
+                    <InputTextArea class="form-control" style="height:150px;" @bind-Value="editableSystem.Description" />
+
+                    <hr />
+
+                    <p class="text-center fw-bold">Metadata Properties</p>
+                    @if (editableSystem.Metadata != null && editableSystem.Metadata.Any())
+                    {
+                        <dl class="row">
+                            @foreach (var md in editableSystem.Metadata)
+                            {
+                                <dt class="col-md-3">
+                                    <InputText class="form-control" @bind-Value="md.Key" />
+                                </dt>
+                                <dd class="col-md-9">
+                                    <div class="position-relative">
+                                        <InputText class="form-control pe-5" @bind-Value="md.Value" />
+                                        <div type="button" class="btn btn-sm btn-danger badge position-absolute top-50 end-0 me-2 mt-0 translate-middle-y" title="Remove" @onclick="() => {editableSystem.Metadata.Remove(md);}">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </div>
+                                    </div>
+                                </dd>
+                            }
+                        </dl>
+                    }
+                    <div class="text-center">
+                        <button type="button" class="btn btn-sm btn-secondary" @onclick="AddMetaData">New</button>
+                    </div>
+
+                    <hr />
+
+                    <button type="submit" class="btn btn-warning w-100 btn-sm">Save Changes</button>
+                </EditForm>
+            </div>
+        </div>
+    }
+    <ConfirmModal T="SystemGroup"
+    @ref="_confirmModal"
+    Title="Confirm Delete"
+    Message="Are you sure you want to delete this item?"
+    OnConfirmed="ConfirmDelete" />
+}
+
+
+@code {
+    [Parameter]
+    public SystemGroup System { get; set; }
+    [Parameter]
+    public EventCallback<SystemGroup> OnUpdate { get; set; }
+    private ConfirmModal<SystemGroup> _confirmModal = new();
+    private EditableSystemGroup? editableSystem { get; set; }
+    private class EditableSystemGroup
+    {
+        public EditableSystemGroup()
+        {
+
+        }
+        public EditableSystemGroup(SystemGroup s)
+        {
+            SystemGroupID = s.SystemGroupID;
+            Name = s.Name;
+            Description = s.Description;
+            CreatedOn = s.CreatedOn;
+            DeactivatedOn = s.DeactivatedOn;
+            Metadata = s.Metadata != null ? new List<Entry>(s.Metadata) : new List<Entry>();
+        }
+
+        public long SystemGroupID { get; set; }
+        [StringLength(100, MinimumLength = 1)]
+        public string Name { get; set; } = string.Empty;
+        [StringLength(500, MinimumLength = 1)]
+        public string Description { get; set; } = string.Empty;
+        public List<Entry>? Metadata { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        public DateTime? DeactivatedOn { get; set; }
+
+        public SystemGroup GetDatabaseModel()
+        {
+            return new SystemGroup
+                {
+                    SystemGroupID = this.SystemGroupID,
+                    Name = this.Name,
+                    Description = this.Description,
+                    CreatedOn = this.CreatedOn,
+                    DeactivatedOn = this.DeactivatedOn,
+                    Metadata = this.Metadata
+                };
+        }
+    }
+
+    private void OpenEditBlade()
+    {
+        editableSystem = new EditableSystemGroup(System);
+    }
+    public void ToggleDelete()
+    {
+        _confirmModal.Show(System);
+    }
+    private void AddMetaData()
+    {
+        if (editableSystem == null) return;
+
+        editableSystem.Metadata ??= new List<Entry>();
+        editableSystem.Metadata.Add(new Entry { Key = "Key", Value = "Value" });
+    }
+    private void HideDetails()
+    {
+        editableSystem = null;   
+    }
+    private async Task ConfirmDelete()
+    {
+        try
+        {
+            var result = await _repo.Delete(System.SystemGroupID);
+            if (result.Success)
+            {
+                _nav.NavigateTo("/systems");
+            }
+            else
+                _toast.ShowToast("Failed to delete resource.", ToastLevel.Error);
+        }
+        catch (Exception e)
+        {
+            _toast.ShowToast("Failed to delete resource.", ToastLevel.Error);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (editableSystem == null) return;
+
+        try
+        {
+            RepositoryResponse<SystemGroup> result;
+            if (System == null)
+            {
+                _toast.ShowToast("Resource not found.", ToastLevel.Error);
+                return;
+            }
+
+            System.Name = editableSystem.Name;
+            System.Description = editableSystem.Description;
+            System.CreatedOn = editableSystem.CreatedOn;
+            System.Metadata = editableSystem.Metadata;
+            System.DeactivatedOn = editableSystem.DeactivatedOn;
+
+            result = await _repo.Update(System);
+            if (result.Success)
+            {
+                await OnUpdate.InvokeAsync(System);
+                HideDetails();
+            }
+            else
+            {
+                _toast.ShowToast("Failed to save changes.", ToastLevel.Error);
+            }
+        }
+        catch (Exception)
+        {
+            _toast.ShowToast("Failed to save changes.", ToastLevel.Error);
+        }
+    }
+}

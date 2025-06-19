@@ -1,0 +1,42 @@
+﻿@page "/systems"
+@using Server.Components.Shared
+@inject ISystemGroupRepository _repo
+<PageTitle>Systems</PageTitle>
+
+@if (systems is not null && systems.Any())
+{
+    <div class="row">
+        @foreach (var system in systems)
+        {
+            <SystemCard System="system"/>
+        }
+    </div>
+}
+
+
+@code {
+    private List<SystemGroup> systems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAll();
+    }
+
+    private async Task GetAll()
+    {
+        try
+        {
+            var result = await _repo.GetAll();
+
+            if (result.Success)
+                systems = result.Data;
+            else
+                _toast.ShowToast("Failed to load resources.", ToastLevel.Error);
+        }
+        catch (Exception e)
+        {
+            _toast.ShowToast("Failed to load resources.", ToastLevel.Error);
+        }   
+    }
+    
+}

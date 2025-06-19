@@ -323,7 +323,7 @@ namespace Server.Services
 						var message = new InjectedMqttApplicationMessage(
 						   new MqttApplicationMessage
 						   {
-							   Topic = $"get/devicegroup/{args.ClientId}/device/{endpoint}/sesnor/{id}",
+							   Topic = $"get/devicegroup/{args.ClientId}/device/{endpoint}/sensor/{id}",
 							   Payload = JsonSerializer.Serialize(result.Data).GetByteSequence(),
 							   QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
 							   Retain = false

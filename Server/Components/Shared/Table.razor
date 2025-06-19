@@ -119,10 +119,11 @@
                         @if (EnableDelete)
                         {
                             <td class="text-end">
-                                <button class="btn btn-sm btn-close"
+                                <button class="btn btn-sm btn-danger"
                                 @onclick:stopPropagation
                                         @onclick="() => ShowDeleteConfirm(item)"
-                                        aria-label="Delete"></button>
+                                        aria-label="Delete">
+                                    <i class="bi bi-trash-fill"></i></button>
                             </td>
                         }
                     </tr>

@@ -1,0 +1,39 @@
+﻿@if (System is not null)
+{
+    <div class="col-md-3 mb-4">
+        <div class="position-relative">
+            <div class="card bg-secondary-subtle hover-grow" role="button" @onclick="NavigateToDetails">
+                <div class="card-body">
+                    <h5 class="card-title">@System.Name</h5>
+
+                    @if (!string.IsNullOrWhiteSpace(System.Description))
+                    {
+                        <p class="card-text text-muted">@System.Description</p>
+                    }
+
+                    @if (System.DeactivatedOn == null)
+                    {
+                        <div class="badge bg-success me-2" style="z-index:3999">Active</div>
+                        <small class="text-muted">Created: @System.CreatedOn.ToLocalTime().ToShortDateString() UTC</small>
+                    }
+                    else
+                    {
+                        <div class="badge bg-danger me-2">Inactive</div>
+                        <small class="text-muted">Deactivated On: @System.DeactivatedOn.Value.ToLocalTime().ToShortDateString() UTC</small>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public SystemGroup System { get; set; } = default!;
+
+
+    private void NavigateToDetails()
+    {
+        _nav.NavigateTo($"system/details/{System.SystemGroupID}");
+    }
+}

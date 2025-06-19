@@ -1,0 +1,46 @@
+﻿@page "/system/details/{id}"
+@using Server.Components.Shared
+@inject ISystemGroupRepository _repo
+
+<SystemHeader System="system" OnUpdate="HeaderChanged" />
+
+@code {
+    [Parameter]
+    public string id { get; set; } = string.Empty;
+
+    private SystemGroup? system { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            var result = await _repo.GetById(Convert.ToInt64(id));
+
+            if (result.Success)
+                system = result.Data;
+            else
+                _toast.ShowToast("Failed to load resource.", ToastLevel.Error);
+
+        }
+        catch (Exception e)
+        {
+            _toast.ShowToast("Failed to load resource.", ToastLevel.Error);
+        }    
+    }
+    private void HeaderChanged(SystemGroup s)
+    {
+        if (system is not null)
+        {
+            system.Name = s.Name;
+            system.Description = s.Description;
+            system.CreatedOn = s.CreatedOn;
+            system.DeactivatedOn = s.DeactivatedOn;
+            system.Metadata = s.Metadata;
+        }
+    }
+}
