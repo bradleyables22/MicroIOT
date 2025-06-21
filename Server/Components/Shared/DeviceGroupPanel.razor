@@ -1,0 +1,58 @@
+﻿@inject IDeviceGroupRepository _repo
+
+@if (groups != null && groups.Any())
+{
+    <div class="row mb-3">
+        <DeviceGroupList Groups="groups" OnGroupSelected="GroupSelected"/>
+
+        @if(selectedGroup is not null)
+        {
+            <DeviceGroupView Group="selectedGroup" OnDeviceUpdated="DeviceGroupUpdated"/>
+        }
+
+    </div>
+}
+
+
+
+@code {
+    [Parameter]
+    public long id { get; set; }
+    private List<DeviceGroup>? groups { get; set; }
+    private DeviceGroup? selectedGroup { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            var result = await _repo.GetWhere(x => x.SystemGroupID == id);
+            if (result.Success)
+            {
+                groups = result.Data;
+            }
+            else
+                _toast.ShowToast($"Failed to load resources", ToastLevel.Error);
+
+        }
+        catch (Exception e)
+        {
+            _toast.ShowToast($"Failed to load resources", ToastLevel.Error);
+        }
+    }
+
+    private void GroupSelected(DeviceGroup group)
+    {
+        selectedGroup = group; 
+    }
+    private void DeviceGroupUpdated(DeviceGroup g)
+    {
+        if (g.DeactivatedOn != null)
+            selectedGroup = null;
+        else
+            selectedGroup = g;
+    }
+}

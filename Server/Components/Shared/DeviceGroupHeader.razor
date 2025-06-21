@@ -1,0 +1,247 @@
+﻿@inject IDeviceGroupRepository _repo
+<div class="row">
+    <div class="col-md-12">
+        <div class="row" style=" max-height:200px; overflow:auto;">
+            <div class="col-md-4">
+                <div class="card bg-body-tertiary">
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <h5 class="card-title">@Group.Alias</h5>
+                            </div>
+                            <div class="col-md text-end">
+                                <div class="btn btn-sm btn-warning" @onclick="OpenEditBlade"><i class="bi bi-pen-fill"></i></div>
+                                <div class="btn btn-sm btn-danger" @onclick="ToggleDelete"><i class="bi bi-trash-fill"></i></div>
+                            </div>
+                        </div>
+                        @if (Group.DeactivatedOn == null)
+                        {
+                            <div class="badge bg-success me-2">Active</div>
+                            <small class="text-muted">Created: @Group.CreatedOn.ToLocalTime().ToShortDateString() UTC</small>
+                        }
+                        else
+                        {
+                            <div class="badge bg-danger me-2">Inactive</div>
+                            <small class="text-muted">Deactivated On: @Group.DeactivatedOn.Value.ToLocalTime().ToShortDateString() UTC</small>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="card bg-body-tertiary h-100">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h5 class="card-title">Metadata Properties</h5>
+                            </div>
+                            <div class="col-md text-end">
+                                <div class="btn btn-sm btn-warning" @onclick="OpenEditBlade"><i class="bi bi-pen-fill"></i></div>
+                            </div>
+                        </div>
+
+                        @if (Group.Metadata is not null && Group.Metadata.Any())
+                        {
+                            <div class="row">
+                                @foreach (var entry in Group.Metadata)
+                                {
+                                    <div class="col-md-4">
+                                        <strong>@entry.Key:</strong> @entry.Value
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    @if(editableGroup is not null)
+    {
+        <div class="offcanvas-backdrop fade show" style="position: fixed; inset: 0; z-index: 1040;" @onclick="HideDetails"></div>
+
+        <div class="offcanvas offcanvas-end show" tabindex="-1" id="detailsBlade" aria-labelledby="offcanvasLabel"
+             style="visibility:visible; display:block; overflow-y:auto; max-height: 100vh; z-index: 1045;">
+            <div class="offcanvas-header">
+                <h4 class="offcanvas-title" id="offcanvasLabel">Edit System Group</h4>
+                <button type="button" class="btn-close" aria-label="Close" @onclick="HideDetails"></button>
+            </div>
+            <div class="offcanvas-body">
+                <EditForm Model="@editableGroup" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <dl class="row">
+                        <dt class="col-sm-4">ID</dt>
+                        <dd class="col-sm-8">@editableGroup.DeviceGroupID</dd>
+                        <dt class="col-sm-4">Alias</dt>
+                        <dd class="col-sm-8">
+                            <InputText class="form-control" @bind-Value="editableGroup.Alias" />
+                        </dd>
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            @if (editableGroup.DeactivatedOn == null)
+                            {
+                                <button type="button" class="btn btn-sm btn-success" @onclick="() => { editableGroup.DeactivatedOn = DateTime.UtcNow; }">Active</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => { editableGroup.DeactivatedOn = null; }">Inactive</button>
+                            }
+                        </dd>
+                    </dl>
+
+                    <hr />
+
+                    <p class="text-center fw-bold">Metadata Properties</p>
+                    @if (editableGroup.Metadata != null && editableGroup.Metadata.Any())
+                    {
+                        <dl class="row">
+                            @foreach (var md in editableGroup.Metadata)
+                            {
+                                <dt class="col-md-3">
+                                    <InputText class="form-control" @bind-Value="md.Key" />
+                                </dt>
+                                <dd class="col-md-9">
+                                    <div class="position-relative">
+                                        <InputText class="form-control pe-5" @bind-Value="md.Value" />
+                                        <div type="button" class="btn btn-sm btn-danger badge position-absolute top-50 end-0 me-2 mt-0 translate-middle-y" title="Remove" @onclick="() => { editableGroup.Metadata.Remove(md); }">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </div>
+                                    </div>
+                                </dd>
+                            }
+                        </dl>
+                    }
+                    <div class="text-center">
+                        <button type="button" class="btn btn-sm btn-secondary" @onclick="AddMetaData">New</button>
+                    </div>
+
+                    <hr />
+
+                    <button type="submit" class="btn btn-warning w-100 btn-sm">Save Changes</button>
+                </EditForm>
+            </div>
+        </div>
+        <ConfirmModal T="DeviceGroup"
+                      @ref="_confirmModal"
+                      Title="Confirm Delete"
+                      Message="Are you sure you want to delete this item?"
+                      OnConfirmed="ConfirmDelete" />
+}
+
+
+@code {
+    [Parameter]
+    public DeviceGroup Group { get; set; }
+    [Parameter]
+    public EventCallback<DeviceGroup> OnUpdate { get; set; }
+    private ConfirmModal<DeviceGroup> _confirmModal = new();
+    private EditableDeviceGroup? editableGroup { get; set; }
+    private class EditableDeviceGroup
+    {
+        public EditableDeviceGroup()
+        {
+
+        }
+        public EditableDeviceGroup(DeviceGroup dg)
+        {
+            DeviceGroupID = dg.DeviceGroupID;
+            Alias = dg.Alias;
+            CreatedOn = dg.CreatedOn;
+            DeactivatedOn = dg.DeactivatedOn;
+            Metadata = dg.Metadata != null ? new List<Entry>(dg.Metadata) : new List<Entry>();
+        }
+
+        public string DeviceGroupID { get; set; }
+        [StringLength(100, MinimumLength = 1)]
+        public string Alias { get; set; } = string.Empty;
+        public List<Entry>? Metadata { get; set; }
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        public DateTime? DeactivatedOn { get; set; }
+
+        public DeviceGroup GetDatabaseModel()
+        {
+            return new DeviceGroup
+            {
+                DeviceGroupID = this.DeviceGroupID,
+                Alias = this.Alias,
+                CreatedOn = this.CreatedOn,
+                DeactivatedOn = this.DeactivatedOn,
+                Metadata = this.Metadata
+            };
+        }
+    }
+
+    private void OpenEditBlade()
+    {
+        editableGroup = new EditableDeviceGroup(Group);
+    }
+    public void ToggleDelete()
+    {
+        _confirmModal.Show(Group);
+    }
+    private void AddMetaData()
+    {
+        if (editableGroup == null) return;
+
+        editableGroup.Metadata ??= new List<Entry>();
+        editableGroup.Metadata.Add(new Entry { Key = "Key", Value = "Value" });
+    }
+    private void HideDetails()
+    {
+        editableGroup = null;
+    }
+    private async Task ConfirmDelete()
+    {
+        try
+        {
+            var result = await _repo.Delete(Group.DeviceGroupID);
+            if (result.Success)
+            {
+                _nav.Refresh(true);
+            }
+            else
+                _toast.ShowToast("Failed to delete resource.", ToastLevel.Error);
+        }
+        catch (Exception e)
+        {
+            _toast.ShowToast("Failed to delete resource.", ToastLevel.Error);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (editableGroup == null) return;
+
+        try
+        {
+            RepositoryResponse<DeviceGroup> result;
+            if (Group == null)
+            {
+                _toast.ShowToast("Resource not found.", ToastLevel.Error);
+                return;
+            }
+
+            Group.Alias = editableGroup.Alias;
+            Group.CreatedOn = editableGroup.CreatedOn;
+            Group.Metadata = editableGroup.Metadata;
+            Group.DeactivatedOn = editableGroup.DeactivatedOn;
+
+            result = await _repo.Update(Group);
+            if (result.Success)
+            {
+                await OnUpdate.InvokeAsync(Group);
+                HideDetails();
+            }
+            else
+            {
+                _toast.ShowToast("Failed to save changes.", ToastLevel.Error);
+            }
+        }
+        catch (Exception)
+        {
+            _toast.ShowToast("Failed to save changes.", ToastLevel.Error);
+        }
+    }
+}

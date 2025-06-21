@@ -20,39 +20,53 @@ namespace Server.Services
 	{
 		public MqttServer _mqttServer;
 		private readonly IServiceScopeFactory _scopeFactory;
-		private readonly List<string> crudWords = new List<string>() { "create", "update", "delete"};
-		public MqttService(IServiceScopeFactory scopeFactory)
-		{
+		private readonly DeviceTracker _deviceTracker;
+		private readonly List<string> crudWords = new List<string>() { "create", "update", "delete" };
 
+		public MqttService(IServiceScopeFactory scopeFactory, DeviceTracker deviceTracker)
+		{
 			_scopeFactory = scopeFactory;
+			_deviceTracker = deviceTracker;
 
 			var optionsBuilder = new MqttServerOptionsBuilder()
 				.WithDefaultEndpoint()
 				.WithDefaultEndpointPort(433)
-				.WithDefaultEndpointPort(80)
-				.WithoutEncryptedEndpoint()
-				;
+				.WithoutEncryptedEndpoint();
 
 			_mqttServer = new MqttServerFactory().CreateMqttServer(optionsBuilder.Build());
 
 			_mqttServer.ValidatingConnectionAsync += ValidateConnectionAsync;
-			_mqttServer.InterceptingSubscriptionAsync += InterceptSubscriptionAsync;
 			_mqttServer.InterceptingPublishAsync += InterceptApplicationMessagePublishAsync;
 			_mqttServer.ClientDisconnectedAsync += ClientDisconnectedAsync;
+			_mqttServer.ClientConnectedAsync += ClientConnectedAsync;
+			_mqttServer.ClientSubscribedTopicAsync += ClientSubscribedAsync;
+			_mqttServer.ClientUnsubscribedTopicAsync += ClientUnsubscribedAsync;
 		}
 
 		public async Task PublishAsync(InjectedMqttApplicationMessage message)
 		{
 			await _mqttServer.InjectApplicationMessage(message);
-
 		}
-		public async Task StartAsync() 
+
+		public Task ClientSubscribedAsync(ClientSubscribedTopicEventArgs args)
+		{
+			_deviceTracker.AddOrUpdateTopic(args.ClientId, args.TopicFilter.Topic);
+			return Task.CompletedTask;
+		}
+
+		public Task ClientUnsubscribedAsync(ClientUnsubscribedTopicEventArgs args)
+		{
+			_deviceTracker.RemoveTopic(args.ClientId, args.TopicFilter);
+			return Task.CompletedTask;
+		}
+
+		public async Task StartAsync()
 		{
 			if (!_mqttServer.IsStarted)
 				await _mqttServer.StartAsync();
 		}
 
-		public async Task StopAsync() 
+		public async Task StopAsync()
 		{
 			if (_mqttServer.IsStarted)
 				await _mqttServer.StopAsync();
@@ -60,25 +74,30 @@ namespace Server.Services
 
 		private Task ValidateConnectionAsync(ValidatingConnectionEventArgs args)
 		{
-			Console.WriteLine($"Client '{args.ClientId}' is connecting...");
 			args.ReasonCode = MqttConnectReasonCode.Success;
 			return Task.CompletedTask;
 		}
 
-		private Task InterceptSubscriptionAsync(InterceptingSubscriptionEventArgs args)
+		private Task ClientConnectedAsync(ClientConnectedEventArgs args)
 		{
-			Console.WriteLine($"Client '{args.ClientId}' is subscribing to '{args.TopicFilter.Topic}'");
+			_deviceTracker.DeviceConnected(args.ClientId);
+			return Task.CompletedTask;
+		}
+
+		private Task ClientDisconnectedAsync(ClientDisconnectedEventArgs args)
+		{
+			_deviceTracker.DeviceDisConnected(args.ClientId);
 			return Task.CompletedTask;
 		}
 
 		private async Task InterceptApplicationMessagePublishAsync(InterceptingPublishEventArgs args)
 		{
-			
 			try
 			{
+				_deviceTracker.UpdateLastMessageTime(args.ClientId);
+
 				var topic = args.ApplicationMessage.Topic;
 				var payload = args.ApplicationMessage.ConvertPayloadToString();
-
 				HandleEndpointResponse response = new();
 
 				switch (topic.Split("/").FirstOrDefault())
@@ -110,16 +129,6 @@ namespace Server.Services
 				args.Response.ReasonCode = MqttPubAckReasonCode.UnspecifiedError;
 				args.Response.ReasonString = "Exception Thrown";
 			}
-			finally 
-			{
-				Console.WriteLine($"{args.ClientId} published to {args.ApplicationMessage.Topic}");
-			} 
-		}
-
-		private Task ClientDisconnectedAsync(ClientDisconnectedEventArgs args)
-		{
-			Console.WriteLine($"Client '{args.ClientId}' disconnected.");
-			return Task.CompletedTask;
 		}
 
 		private async Task<HandleEndpointResponse> HandleDeviceGroupPublish(string topic, string? payload, InterceptingPublishEventArgs args) 
