@@ -1,0 +1,216 @@
+﻿@using MQTTnet
+@using MQTTnet.Protocol
+@using MQTTnet.Server
+@using Server.Extensions
+@using Server.Models.Mqtt
+@inject MqttService _mqtt
+@implements IDisposable
+@if (_visible)
+{
+    @if (_visible)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                <div class="modal-content shadow h-100 d-flex flex-column">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@Group.Alias</h5>
+
+                        @if (trackRecord is null || trackRecord.Disconnected)
+                        {
+                            <i class="bi bi-wifi-off text-danger ms-2 me-2"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-wifi text-success ms-2 me-2"></i>
+                        }
+
+                        @if (string.IsNullOrEmpty(selectedTopic))
+                        {
+                            <span> Please select a topic</span>
+                        }
+                        else
+                        {
+                            <span> Communiticating on: @selectedTopic</span>
+                        }
+
+                        <button type="button" class="btn-close" @onclick="Hide" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body overflow-hidden p-3" style="flex-grow: 1;">
+                        <div class="row h-100">
+                            <div class="col-md-3 d-flex flex-column gap-2">
+                                @if (trackRecord?.Topics != null && trackRecord.Topics.Any() )
+                                {
+                                    <div class="btn-group-vertical">
+                                        @foreach (var topic in trackRecord.Topics)
+                                        {
+                                            <div class="btn btn-primary btn-sm w-100" @onclick="@(() => SelectTopic(topic))">@topic</div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="col-md d-flex flex-column">
+                                <div id="topic" class="bg-dark text-white rounded-2 p-3 overflow-auto mb-3" style="flex-grow: 1;">
+                                    @foreach (var m in messages.Where(x => x.Topic == selectedTopic).OrderByDescending(x => x.Time))
+                                    {
+                                        <div class="row mb-2">
+                                            @if (m.IsSelf)
+                                            {
+                                                <div class="col-md-10 offset-md-2 text-end">
+                                                    <span class="badge bg-success">@m.Message</span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="col-md-10">
+                                                    <span class="badge bg-secondary">@m.Message</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    
+                                </div>
+
+                                <InputTextArea @bind-Value="msgInput" class="form-control" placeholder="Enter message..." style="min-height: 100px;" />
+
+                                <div class="btn btn-success w-100 mt-3" @onclick="SendMessage">
+                                    Send <i class="bi bi-send"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+@code {
+    [Parameter]
+    public DeviceGroup Group { get; set; }
+    private bool _visible;
+    private DeviceRecord? trackRecord { get; set; }
+    private string msgInput { get; set; }
+    private string selectedTopic { get; set; } = string.Empty;
+    private List<MessageItem> messages { get; set; } = new();
+    private bool subscribed = false;
+    public class MessageItem
+    {
+        public bool IsSelf { get; set; }
+        public string? Id { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string Topic { get; set; } = string.Empty;
+        public DateTime Time { get; set; } = DateTime.UtcNow;
+    }
+
+
+    protected override void OnParametersSet()
+    {
+        if (subscribed)
+        {
+            _deviceTracker.OnDeviceChanged -= HandleDeviceChange;
+            _mqtt.MessageReceived -= HandleIncomingMessage;
+        }
+
+        _deviceTracker.OnDeviceChanged += HandleDeviceChange;
+        _mqtt.MessageReceived += HandleIncomingMessage;
+        subscribed = true;
+
+        trackRecord = _deviceTracker.GetDevice(Group.DeviceGroupID);
+        
+    }
+
+    public void Show()
+    {
+        _visible = true;
+    }
+
+    public void Hide()
+    {
+        _visible = false;
+        Cleanup();
+    }
+
+    public void Toggle()
+    {
+        _visible = !_visible;
+    }
+
+    private void SelectTopic(string t)
+    {
+        selectedTopic = t;
+        msgInput = string.Empty;
+    }
+    private void HandleDeviceChange(string deviceId, ChangeType type)
+    {
+        if (deviceId == Group.DeviceGroupID)
+        {
+            trackRecord = _deviceTracker.GetDevice(deviceId);
+        }
+    }
+    private void HandleIncomingMessage(UIMessageInterception interception)
+    {
+        if (!string.IsNullOrEmpty(selectedTopic))
+        {
+            if (_visible && interception.DeviceGroupID == Group.DeviceGroupID && trackRecord.Topics.Any(t => t == interception.Topic))
+            {
+                messages.Add(new MessageItem
+                    {
+                        IsSelf = false,
+                        Topic = interception.Topic,
+                        Message = interception.Message,
+                        Time = interception.Time,
+                        Id = interception.DeviceGroupID
+                    });
+                InvokeAsync(StateHasChanged);
+            }
+        }    
+    }
+    private async Task SendMessage()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(selectedTopic) && !string.IsNullOrEmpty(msgInput))
+            {
+                var message = new InjectedMqttApplicationMessage(
+                          new MqttApplicationMessage
+                              {
+                                  Topic = selectedTopic,
+                                  Payload = msgInput.GetByteSequence(),
+                                  QualityOfServiceLevel = MqttQualityOfServiceLevel.AtLeastOnce,
+                                  Retain = false
+                              });
+
+                await _mqtt.PublishAsync(message);
+
+                messages.Add(new MessageItem { IsSelf = true, Message = msgInput, Topic = selectedTopic });
+
+                msgInput = string.Empty;
+            }
+            else
+                _toast.ShowToast("A topic must be selected and a message must be provided.", ToastLevel.Error);
+        }
+        catch (Exception)
+        {
+            _toast.ShowToast("Failed to publish message.", ToastLevel.Error);
+        }
+    }
+
+    private void Cleanup()
+    {
+        if (subscribed)
+        {
+            _deviceTracker.OnDeviceChanged -= HandleDeviceChange;
+            _mqtt.MessageReceived -= HandleIncomingMessage;
+            subscribed = false;
+            msgInput = string.Empty;
+            selectedTopic = string.Empty;
+            messages.Clear();
+        }
+    }
+
+    public void Dispose()
+    {
+        Cleanup();
+    }
+}

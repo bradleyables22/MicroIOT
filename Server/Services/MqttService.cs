@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.VisualBasic;
 using MQTTnet;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
@@ -22,8 +23,8 @@ namespace Server.Services
 		private readonly IServiceScopeFactory _scopeFactory;
 		private readonly DeviceTracker _deviceTracker;
 		private readonly List<string> crudWords = new List<string>() { "create", "update", "delete" };
-
-		public MqttService(IServiceScopeFactory scopeFactory, DeviceTracker deviceTracker)
+        public event Action<UIMessageInterception>? MessageReceived;
+        public MqttService(IServiceScopeFactory scopeFactory, DeviceTracker deviceTracker)
 		{
 			_scopeFactory = scopeFactory;
 			_deviceTracker = deviceTracker;
@@ -99,8 +100,9 @@ namespace Server.Services
 				var topic = args.ApplicationMessage.Topic;
 				var payload = args.ApplicationMessage.ConvertPayloadToString();
 				HandleEndpointResponse response = new();
+				MessageReceived?.Invoke(new UIMessageInterception { DeviceGroupID = args.ClientId, Message = payload, Topic = topic, Time = DateTime.UtcNow });
 
-				switch (topic.Split("/").FirstOrDefault())
+                switch (topic.Split("/").FirstOrDefault())
 				{
 					case "devicegroups":
 						response = await HandleDeviceGroupPublish(topic, payload, args);

@@ -1,0 +1,97 @@
+﻿@using Server.Components.Models
+@using Server.Extensions
+@inject IDeviceRepository _devices
+@inject IDeviceTypeRepository _types
+<div class="card bg-body-tertiary">
+    <div class="card-body">
+        @if (pieData is not null)
+        {
+            <h3 class="text-center">DeviceTypes</h3>
+            <RadzenChart>
+                <RadzenPieSeries Data="pieData" CategoryProperty="Label" ValueProperty="Value" Fills="fills" Title="Devices">
+                    <TooltipTemplate Context="slice">
+                        <div style="padding: 4px;">
+                            <strong>@slice.Label</strong><br/>
+                            <div class="btn btn-sm w-100 btn-primary mt-2">Devices</div>
+                        </div>
+                    </TooltipTemplate>
+
+                </RadzenPieSeries>
+
+                <RadzenLegend Visible="false"/>
+            </RadzenChart>
+        }
+        else
+        {
+            <div class="text-muted small">Loading chart…</div>
+        }
+    </div>
+</div>
+@code {
+    [Parameter] public DeviceGroup Group { get; set; }
+    private List<Device>? devices;
+    private List<DeviceType> types { get; set; } = new();
+    private List<PieSlice>? pieData;
+    private List<string> fills = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var t = await _types.GetAll();
+        types = t.Data ?? new();
+        if (types.Any())
+        {
+            for (int i = 0; i < types.Count; i++)
+            {
+                var fill = ThemeColors.Get(i);
+                fills.Add(fill);
+            }
+
+        }
+        else
+            fills.Add(ThemeColors.Get(0));
+
+        await BuildChartAsync();
+    }
+
+    private async Task BuildChartAsync()
+    {
+        pieData = null;
+
+        var deviceResult = await _devices.GetWhere(
+            x => x.DeviceGroupID == Group.DeviceGroupID
+        );
+
+        devices = deviceResult.Data ?? new();
+        var types = await _types.GetAll();
+
+        var grouped = devices
+            .Where(d => d.DeviceType != null)
+            .GroupBy(d => d.DeviceType!.Name)
+            .OrderBy(g => g.Key)
+            .ToList();
+
+        pieData = grouped.Select((g, i) => new PieSlice
+        {
+            Label = g.Key,
+            Value = g.Count(),
+            Color = GetColor(i)
+        }).ToList();
+    }
+
+    private void CategoryClicked()
+    {
+        
+    }
+    // private void OnSeriesClick(SeriesClickEventArgs args)
+    // {
+    //     // args.Category should match your Label
+    //     var clickedLabel = args.Category?.ToString();
+    //     var clickedSlice = pieData.FirstOrDefault(x => x.Label == clickedLabel);
+    //     if (clickedSlice != null)
+    //     {
+    //         Console.WriteLine($"Slice clicked: {clickedSlice.Label} - {clickedSlice.Value}");
+    //     }
+    // }
+
+    private string GetColor(int index) => ThemeColors.Get(index);
+}

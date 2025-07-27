@@ -1,44 +1,51 @@
-﻿<div class="col-md-2 mt-3">
+﻿@implements IDisposable
+
+<div class="col-md-2 mt-3">
     @if (Groups is not null)
     {
         <div class="btn-group-vertical w-100">
-            @foreach (var group in Groups.OrderBy(x=>x.DeactivatedOn))
+            @foreach (var group in Groups.OrderBy(x => x.DeactivatedOn))
             {
                 var device = _deviceTracker.GetDevice(group.DeviceGroupID);
                 bool isOnline = device?.Disconnected == false;
                 var iconClass = isOnline ? "bi bi-wifi" : "bi bi-wifi-off";
 
-                if (group.DeactivatedOn != null)
-                {
-                    <div class="btn btn-primary d-flex align-items-center justify-content-between" style="opacity:0.4" @onclick="() => GroupSelected(group)">
-                        <span>@group.Alias</span>
-                        <i class="@iconClass"></i>
-                    </div>
-                }
-                else
-                {
-                    <div class="btn btn-primary d-flex align-items-center justify-content-between"
-                         @onclick="() => GroupSelected(group)">
-                        <span>@group.Alias</span>
-                        <i class="@iconClass"></i>
-                    </div>
-                }
+                <div class="btn btn-primary d-flex align-items-center justify-content-between"
+                     style="@(group.DeactivatedOn != null ? "opacity:0.4" : "")"
+                     @onclick="() => GroupSelected(group)">
+                    <span>@group.Alias</span>
+                    <i class="@iconClass"></i>
+                </div>
             }
         </div>
     }
 </div>
 
-
 @code {
-    [Parameter]
-    public List<DeviceGroup>? Groups { get; set; }
-    [Parameter]
-    public EventCallback<DeviceGroup> OnGroupSelected { get; set; }
-    private DeviceGroup? selectedGroup { get; set; }
+    [Parameter] public List<DeviceGroup>? Groups { get; set; }
+    [Parameter] public EventCallback<DeviceGroup> OnGroupSelected { get; set; }
+
+    private DeviceGroup? selectedGroup;
+
+    protected override void OnInitialized()
+    {
+        _deviceTracker.OnDeviceChanged += HandleDeviceChanged;
+    }
+
+    private void HandleDeviceChanged(string deviceGroupId, ChangeType type)
+    {
+        if (Groups?.Any(g => g.DeviceGroupID == deviceGroupId) == true)
+            InvokeAsync(StateHasChanged); 
+    }
 
     private async Task GroupSelected(DeviceGroup group)
     {
         selectedGroup = group;
         await OnGroupSelected.InvokeAsync(group);
+    }
+
+    public void Dispose()
+    {
+        _deviceTracker.OnDeviceChanged -= HandleDeviceChanged;
     }
 }

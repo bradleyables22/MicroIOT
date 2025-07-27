@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using MQTTnet.Server;
+using Radzen;
 using Scalar.AspNetCore;
 using Server.Components;
 using Server.Data;
@@ -11,7 +12,7 @@ using Server.Services.Background;
 using Server.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddRadzenComponents();
 builder.Services.AddDbContext<AppDbContext>(options =>
 	options.UseInMemoryDatabase("InMemoryDb"));
 
@@ -25,8 +26,9 @@ builder.Services.AddOpenApi("v1", options =>
 builder.Services.AddHostedService<DummyDataService>();
 builder.Services.AddSingleton<MqttService>();
 builder.Services.AddSingleton<DeviceTracker>();
+builder.Services.AddSingleton<ServerSettings>();
 builder.Services.AddScoped<ToastService>();
-//builder.Services.AddHostedService<MqttBackgroundService>();
+builder.Services.AddHostedService<MqttBackgroundService>();
 
 builder.Services.AddCors(options => 
 {

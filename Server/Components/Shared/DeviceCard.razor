@@ -1,0 +1,29 @@
+﻿
+<div class="col-md-3">
+    <div class="card bg-body-tertiary hover-grow border-2 border-secondary-subtle" @onclick="()=>NavigateToDevice(Device.DeviceID)">
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-md-12 text-center">
+                    <h5 class="card-title">@Device.Alias</h5>
+                </div>
+            </div>
+            @if (Device.DeactivatedOn == null)
+            {
+                <div class="badge bg-success me-2">Active</div>
+                <small class="text-muted">Created: @Device.CreatedOn.ToLocalTime().ToShortDateString() UTC</small>
+            }
+            else
+            {
+                <div class="badge bg-danger me-2">Inactive</div>
+                <small class="text-muted">Deactivated On: @Device.DeactivatedOn.Value.ToLocalTime().ToShortDateString() UTC</small>
+            }
+        </div>
+    </div>
+</div>
+@code {
+    [Parameter] public Device Device { get; set; }
+    private void NavigateToDevice(string id)
+    {
+        _nav.NavigateTo($"device/details/{id}");
+    }
+}

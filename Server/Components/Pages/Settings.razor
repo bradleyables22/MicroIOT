@@ -1,0 +1,32 @@
+﻿@page "/settings"
+@inject ServerSettings _settings
+@inject IJSRuntime JS
+
+<h3 class="mb-4">Server Settings</h3>
+
+<div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" role="switch" id="hideDeactivated"
+           @bind="_settings.HideDeactivatedItems">
+    <label class="form-check-label" for="hideDeactivated">
+        Hide Deactivated Items
+    </label>
+</div>
+
+<div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" role="switch" id="useMqttAuth"
+           @bind="_settings.UseMqttAuthentication">
+    <label class="form-check-label" for="useMqttAuth">
+        Use MQTT Authentication
+    </label>
+</div>
+
+<div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" role="switch" id="useHttpsAuth"
+           @bind="_settings.UseHttpsAuthentication">
+    <label class="form-check-label" for="useHttpsAuth">
+        Use HTTPS Authentication
+    </label>
+</div>
+
+@code {
+}
