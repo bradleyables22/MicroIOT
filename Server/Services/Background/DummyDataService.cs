@@ -84,7 +84,7 @@ namespace Server.Services.Background
             var loc = new SensorCategory { SensorCategoryID = 0, Name = "Location" };
             _context.SensorCategories.AddRange(loc);
 
-            var trailerGroup = new DeviceGroup { DeviceGroupID = "TRAILER-001", Alias = "Dry Van", SystemGroupID = fleetSystem.SystemGroupID, GroupTypeID = trailerGroupType.GroupTypeID };
+            var trailerGroup = new DeviceGroup { DeviceGroupID = "TRAILER-001", Alias = "Dry Van 001", SystemGroupID = fleetSystem.SystemGroupID, GroupTypeID = trailerGroupType.GroupTypeID };
 			_context.DeviceGroups.Add(trailerGroup);
 
 			var trailer1 = new Device { DeviceID = "TRAILER-001-GPS", Alias = "Trailer 001 GPS", DeviceGroupID = trailerGroup.DeviceGroupID, DeviceTypeID= gps.DeviceTypeID };

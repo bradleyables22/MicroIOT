@@ -17,31 +17,11 @@ namespace Server.Endpoints
 
 			var group = app.MapGroup("api/v1/Readings").WithTags("Readings");
 
-			group.MapGet("{sensorID}", async (AppDbContext _context,string sensorID,[FromQuery] long? afterReadingID,[FromQuery] int take = 10) =>
+			group.MapGet("{sensorID}", async (ISensorReadingRepository _repo,string sensorID,string typeID,[FromQuery] long? afterReadingID,[FromQuery] int take = 10) =>
 			{
-				if (take <= 0 || take > 1000)
-					return Results.Problem("Invalid 'take' parameter. Must be between 1 and 1000.");
+				var result = await _repo.GetPaged(sensorID,afterReadingID,take,typeID);
 
-				var query = _context.SensorReadings
-					.Where(x => x.SensorID == sensorID);
-
-				if (afterReadingID.HasValue)
-					query = query.Where(x => x.ReadingID < afterReadingID);
-
-				var results = await query
-					.OrderByDescending(x => x.ReadingID)
-					.Take(take)
-					.ToListAsync();
-
-				var count = results?.Count ?? 0;
-
-				return Results.Ok(new PagedResponse<SensorReading>
-				{
-					Count = count,
-					Last = results?.LastOrDefault()?.ReadingID,
-					Data = results,
-					End =  count<take
-				});
+				return result.AsResponse();
 			})
 			.Produces<PagedResponse<SensorReading>>(200, "application/json")
 			.ProducesProblem(400, "application/json")
